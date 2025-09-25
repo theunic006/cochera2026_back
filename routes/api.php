@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SuscriberController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\RoleController;
 
 // ================================
 // RUTAS PÚBLICAS (No requieren autenticación)
@@ -77,6 +79,30 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [UserController::class, 'show']);        // GET /api/users/{id} - Mostrar usuario
         Route::put('/{id}', [UserController::class, 'update']);      // PUT /api/users/{id} - Actualizar usuario
         Route::delete('/{id}', [UserController::class, 'destroy']);  // DELETE /api/users/{id} - Eliminar usuario
+    });
+
+    // ================================
+    // CRUD DE COMPANIES (Solo usuarios autenticados)
+    // ================================
+    Route::prefix('companies')->group(function () {
+        Route::get('/', [CompanyController::class, 'index']);           // GET /api/companies - Listar companies
+        Route::post('/', [CompanyController::class, 'store']);          // POST /api/companies - Crear company
+        Route::get('/search', [CompanyController::class, 'search']);    // GET /api/companies/search?query=termino - Buscar companies
+        Route::get('/{id}', [CompanyController::class, 'show']);        // GET /api/companies/{id} - Mostrar company
+        Route::put('/{id}', [CompanyController::class, 'update']);      // PUT /api/companies/{id} - Actualizar company
+        Route::delete('/{id}', [CompanyController::class, 'destroy']);  // DELETE /api/companies/{id} - Eliminar company
+    });
+
+    // ================================
+    // CRUD DE ROLES (Solo usuarios autenticados)
+    // ================================
+    Route::prefix('roles')->group(function () {
+        Route::get('/', [RoleController::class, 'index']);              // GET /api/roles - Listar roles
+        Route::post('/', [RoleController::class, 'store']);             // POST /api/roles - Crear role
+        Route::get('/search', [RoleController::class, 'search']);       // GET /api/roles/search?query=termino - Buscar roles
+        Route::get('/{role}', [RoleController::class, 'show']);         // GET /api/roles/{id} - Mostrar role
+        Route::put('/{role}', [RoleController::class, 'update']);       // PUT /api/roles/{id} - Actualizar role
+        Route::delete('/{role}', [RoleController::class, 'destroy']);   // DELETE /api/roles/{id} - Eliminar role
     });
 });
 // ================================

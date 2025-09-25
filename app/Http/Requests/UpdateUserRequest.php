@@ -26,6 +26,9 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('users')->ignore($this->user ?? $this->id)
             ],
             'password' => 'sometimes|required|string|min:8|confirmed',
+            'categoria' => 'sometimes|nullable|string|max:50',
+            'idrol' => 'sometimes|nullable|exists:roles,id',
+            'id_company' => 'sometimes|nullable|exists:companies,id',
         ];
     }
 
@@ -42,6 +45,10 @@ class UpdateUserRequest extends FormRequest
             'password.required' => 'La contraseña es obligatoria.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'password.confirmed' => 'La confirmación de la contraseña no coincide.',
+            'categoria.string' => 'La categoría debe ser una cadena de texto.',
+            'categoria.max' => 'La categoría no puede tener más de 50 caracteres.',
+            'idrol.exists' => 'El rol seleccionado no existe.',
+            'id_company.exists' => 'La empresa seleccionada no existe.',
         ];
     }
 }

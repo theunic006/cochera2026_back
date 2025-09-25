@@ -47,11 +47,19 @@ class UserController extends Controller
     public function store(StoreUserRequest $request): JsonResponse
     {
         try {
+            $validatedData = $request->validated();
+
             $user = User::create([
-                'name' => $request->validated()['name'],
-                'email' => $request->validated()['email'],
-                'password' => Hash::make($request->validated()['password']),
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'password' => Hash::make($validatedData['password']),
+                'categoria' => $validatedData['categoria'] ?? null,
+                'idrol' => $validatedData['idrol'] ?? null,
+                'id_company' => $validatedData['id_company'] ?? null,
             ]);
+
+            // Cargar las relaciones para mostrar en la respuesta
+            $user->load(['role', 'company']);
 
             return response()->json([
                 'success' => true,
@@ -74,7 +82,7 @@ class UserController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
-            $user = User::find($id);
+            $user = User::with(['role', 'company'])->find($id);
 
             if (!$user) {
                 return response()->json([
@@ -128,7 +136,22 @@ class UserController extends Controller
                 $user->password = Hash::make($validated['password']);
             }
 
+            if (isset($validated['categoria'])) {
+                $user->categoria = $validated['categoria'];
+            }
+
+            if (isset($validated['idrol'])) {
+                $user->idrol = $validated['idrol'];
+            }
+
+            if (isset($validated['id_company'])) {
+                $user->id_company = $validated['id_company'];
+            }
+
             $user->save();
+
+            // Cargar las relaciones para mostrar en la respuesta
+            $user->load(['role', 'company']);
 
             return response()->json([
                 'success' => true,

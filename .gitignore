@@ -1,0 +1,109 @@
+# Laravel Framework
+*.log
+.env
+.env.backup
+.env.production
+.env.local
+.env.*.local
+.phpunit.result.cache
+/auth.json
+/vendor
+/storage/*.key
+/storage/pail
+
+# Laravel Logs
+/storage/logs/*.log
+/storage/logs/*
+
+# Laravel Cache
+/bootstrap/cache/*.php
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+
+# Laravel Public Storage
+/public/storage
+/public/hot
+/public/build
+
+# Node.js Dependencies
+/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# IDEs and Editors
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+/.phpactor.json
+.phpactor.json
+*.swp
+*.swo
+*~
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+# Laravel Homestead
+Homestead.json
+Homestead.yaml
+vagrant.log
+
+# PHP Unit
+/.phpunit.cache
+phpunit.xml
+coverage.xml
+*.coverage
+
+# Composer
+composer.phar
+composer.lock
+
+# Local Development Files
+.vagrant/
+.env.dusk.local
+.env.testing
+
+# Database Files
+*.sqlite
+*.db
+database.sqlite
+
+# Backup Files
+*.backup
+*.bak
+*.tmp
+
+# Laravel Telescope
+storage/telescope/*
+
+# Laravel Horizon
+horizon.log
+
+# Debugbar
+storage/debugbar
+
+# Test Files
+tests/_output/*
+tests/_support/_generated
+
+# Custom Files - Archivos de prueba/documentación local
+test_login_user.json
+USERS_GENERATED_REPORT.md
+TESTING_GUIDE.md
+
+# Archivos temporales de desarrollo
+*.temp
+*.draft

@@ -18,11 +18,12 @@ class Propietario extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'nombre',
+        'nombres',
+        'apellidos',
+        'documento',
         'telefono',
-        'tipo_boleta',
-        'numero_boleta',
-        'id_registro',
+        'email',
+        'direccion',
     ];
 
     /**

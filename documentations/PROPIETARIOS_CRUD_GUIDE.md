@@ -257,6 +257,16 @@ Authorization: Bearer {token}
 
 ✅ **Tabla `propietarios` creada** con estructura completa  
 ✅ **CRUD completo implementado** (5 endpoints)  
+
+### **📋 Los 5 Endpoints CRUD Implementados:**
+
+1. **GET** `/api/propietarios` - Listar propietarios con paginación y filtros
+2. **POST** `/api/propietarios` - Crear nuevo propietario
+3. **GET** `/api/propietarios/{id}` - Ver propietario específico
+4. **PUT** `/api/propietarios/{id}` - Actualizar propietario existente  
+5. **DELETE** `/api/propietarios/{id}` - Eliminar propietario
+
+
 ✅ **Validaciones robustas** para integridad de datos  
 ✅ **Búsqueda y filtrado** avanzado implementado  
 ✅ **Relaciones con vehículos** configuradas  
@@ -281,9 +291,19 @@ Authorization: Bearer {token}
 
 ### **🎯 Casos de Uso:**
 1. **Registro de propietarios** con documentación completa
-2. **Búsqueda rápida** por cualquier campo relevante
-3. **Actualización de datos** sin afectar relaciones
-4. **Gestión de múltiples vehículos** por propietario
+2
+.I **B
+ú
+# 📋 **Lista Completa de Endpoints CRUD Implementados**#squeda rápida** por cualquier campo relevante
+3. **Actua
+l
+## **📊 Resumen Técnico:**#ización de datos** sin afect
+| Categorí | Endpoints | Estado | Funcionalidad |aar relaciones
+4. **Gestión de múltiples vehículos*
+|----------|-----------|--------|---------------|
+| **CRU Básico** | 5 | ✅ | Operaciones fundamentales |D-* por propietario
 5. **Control de unicidad** en documentos y emails
 
-**¡El sistema de propietarios está listo y completamente funcional!** 🎯
+**¡El sistema de propietarios está 
+| **Búsqueda/Filtros* | 
+ GET /api/propietarios                           # Listar todos✅5 | ✅ | Consultas avanzadas |*listo y completamente funcional!** 🎯

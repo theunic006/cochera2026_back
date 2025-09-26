@@ -26,7 +26,8 @@ class StoreVehiculoRequest extends FormRequest
             'modelo' => 'nullable|string|max:50',
             'marca' => 'nullable|string|max:50',
             'color' => 'nullable|string|max:30',
-            'id_tipo_vehiculo' => 'nullable|integer|exists:tipo_vehiculos,id',
+            'anio' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
+            'tipo_vehiculo_id' => 'nullable|integer|exists:tipo_vehiculos,id',
         ];
     }
 
@@ -46,8 +47,11 @@ class StoreVehiculoRequest extends FormRequest
             'marca.max' => 'La marca no puede tener más de 50 caracteres.',
             'color.string' => 'El color debe ser una cadena de texto.',
             'color.max' => 'El color no puede tener más de 30 caracteres.',
-            'id_tipo_vehiculo.integer' => 'El ID del tipo de vehículo debe ser un número entero.',
-            'id_tipo_vehiculo.exists' => 'El tipo de vehículo seleccionado no existe.',
+            'anio.integer' => 'El año debe ser un número entero.',
+            'anio.min' => 'El año debe ser mayor a 1900.',
+            'anio.max' => 'El año no puede ser mayor al próximo año.',
+            'tipo_vehiculo_id.integer' => 'El ID del tipo de vehículo debe ser un número entero.',
+            'tipo_vehiculo_id.exists' => 'El tipo de vehículo seleccionado no existe.',
         ];
     }
 
@@ -61,7 +65,8 @@ class StoreVehiculoRequest extends FormRequest
             'modelo' => 'modelo',
             'marca' => 'marca',
             'color' => 'color',
-            'id_tipo_vehiculo' => 'tipo de vehículo',
+            'anio' => 'año',
+            'tipo_vehiculo_id' => 'tipo de vehículo',
         ];
     }
 }

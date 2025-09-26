@@ -22,10 +22,23 @@ class VehiculoResource extends JsonResource
             'color' => $this->color,
             'anio' => $this->anio,
             'tipo_vehiculo_id' => $this->tipo_vehiculo_id,
-            'tipo_vehiculo' => $this->whenLoaded('tipoVehiculo'),
-            'descripcion_completa' => $this->descripcion_completa,
-            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
+
+            // Información completa del tipo de vehículo
+            'tipo_vehiculo' => $this->whenLoaded('tipoVehiculo', function () {
+                return [
+                    'id' => $this->tipoVehiculo->id,
+                    'nombre' => $this->tipoVehiculo->nombre,
+                    'valor' => $this->tipoVehiculo->valor,
+                ];
+            }),
+
+             // Campos calculados útiles
+            'descripcion_completa' => $this->placa . ' - ' . $this->marca . ' ' . $this->modelo,
+            'tipo_vehiculo_nombre' => $this->tipoVehiculo?->nombre ?? 'Sin tipo asignado',
+            'anio_formateado' => $this->anio ? 'Año ' . $this->anio : 'Año no especificado',
+
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

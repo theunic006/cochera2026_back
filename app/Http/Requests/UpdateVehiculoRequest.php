@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateVehiculoRequest extends FormRequest
 {
@@ -21,19 +22,27 @@ class UpdateVehiculoRequest extends FormRequest
      */
     public function rules(): array
     {
+        $vehiculoId = $this->getVehiculoId();
+
         return [
             'placa' => [
                 'required',
                 'string',
-                'max:10',
-                'regex:/^[A-Z0-9\-]+$/'
+                'max:15',
+                Rule::unique('vehiculos')->ignore($vehiculoId)
             ],
-            'marca' => 'required|string|max:50',
-            'modelo' => 'required|string|max:50',
-            'color' => 'required|string|max:30',
-            'anio' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'tipo_vehiculo_id' => 'required|exists:tipo_vehiculos,id'
+            'marca' => 'nullable|string|max:50',
+            'modelo' => 'nullable|string|max:50',
+            'color' => 'nullable|string|max:30',
+            'anio' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
+            'tipo_vehiculo_id' => 'nullable|integer|exists:tipo_vehiculos,id'
         ];
+    }
+
+    private function getVehiculoId()
+    {
+        // Obtener el ID del vehículo desde la URL
+        return request()->route('vehiculo');
     }
 
     /**

@@ -60,14 +60,7 @@ class VehiculoController extends Controller
      */
     public function store(StoreVehiculoRequest $request): JsonResponse
     {
-        $data = $request->validated();
-
-        // Establecer tipo_vehiculo_id = 1 si está vacío o es null
-        if (empty($data['tipo_vehiculo_id'])) {
-            $data['tipo_vehiculo_id'] = 1;
-        }
-
-        $vehiculo = Vehiculo::create($data);
+        $vehiculo = Vehiculo::create($request->validated());
         $vehiculo->load('tipoVehiculo');
 
         return response()->json([
@@ -95,14 +88,7 @@ class VehiculoController extends Controller
      */
     public function update(UpdateVehiculoRequest $request, Vehiculo $vehiculo): JsonResponse
     {
-        $data = $request->validated();
-
-        // Establecer tipo_vehiculo_id = 1 si está vacío o es null
-        if (empty($data['tipo_vehiculo_id'])) {
-            $data['tipo_vehiculo_id'] = 1;
-        }
-
-        $vehiculo->update($data);
+        $vehiculo->update($request->validated());
         $vehiculo->load('tipoVehiculo');
 
         return response()->json([

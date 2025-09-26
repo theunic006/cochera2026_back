@@ -22,8 +22,7 @@ class PropietarioResource extends JsonResource
             'telefono' => $this->telefono,
             'email' => $this->email,
             'direccion' => $this->direccion,
-            'nombre_completo' => $this->nombre_completo,
-            'documento_formateado' => $this->documento_formateado,
+            'nombre_completo' => trim(($this->nombres ?? '') . ' ' . ($this->apellidos ?? '')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

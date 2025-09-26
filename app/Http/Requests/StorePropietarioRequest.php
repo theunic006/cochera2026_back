@@ -22,11 +22,12 @@ class StorePropietarioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => 'required|string|max:100',
+            'nombres' => 'required|string|max:100',
+            'apellidos' => 'required|string|max:100',
+            'documento' => 'required|string|max:50|unique:propietarios,documento',
             'telefono' => 'nullable|string|max:20',
-            'tipo_boleta' => 'nullable|string|max:50',
-            'numero_boleta' => 'nullable|string|max:50',
-            'id_registro' => 'nullable|integer',
+            'email' => 'nullable|email|max:100',
+            'direccion' => 'nullable|string|max:255',
         ];
     }
 
@@ -36,16 +37,22 @@ class StorePropietarioRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nombre.required' => 'El nombre del propietario es obligatorio.',
-            'nombre.string' => 'El nombre debe ser una cadena de texto.',
-            'nombre.max' => 'El nombre no puede tener más de 100 caracteres.',
+            'nombres.required' => 'Los nombres del propietario son obligatorios.',
+            'nombres.string' => 'Los nombres deben ser una cadena de texto.',
+            'nombres.max' => 'Los nombres no pueden tener más de 100 caracteres.',
+            'apellidos.required' => 'Los apellidos del propietario son obligatorios.',
+            'apellidos.string' => 'Los apellidos deben ser una cadena de texto.',
+            'apellidos.max' => 'Los apellidos no pueden tener más de 100 caracteres.',
+            'documento.required' => 'El documento es obligatorio.',
+            'documento.string' => 'El documento debe ser una cadena de texto.',
+            'documento.max' => 'El documento no puede tener más de 50 caracteres.',
+            'documento.unique' => 'Ya existe un propietario con este documento.',
             'telefono.string' => 'El teléfono debe ser una cadena de texto.',
             'telefono.max' => 'El teléfono no puede tener más de 20 caracteres.',
-            'tipo_boleta.string' => 'El tipo de boleta debe ser una cadena de texto.',
-            'tipo_boleta.max' => 'El tipo de boleta no puede tener más de 50 caracteres.',
-            'numero_boleta.string' => 'El número de boleta debe ser una cadena de texto.',
-            'numero_boleta.max' => 'El número de boleta no puede tener más de 50 caracteres.',
-            'id_registro.integer' => 'El ID de registro debe ser un número entero.',
+            'email.email' => 'Debe proporcionar un email válido.',
+            'email.max' => 'El email no puede tener más de 100 caracteres.',
+            'direccion.string' => 'La dirección debe ser una cadena de texto.',
+            'direccion.max' => 'La dirección no puede tener más de 255 caracteres.',
         ];
     }
 

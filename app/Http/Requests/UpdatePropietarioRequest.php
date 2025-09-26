@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePropietarioRequest extends FormRequest
 {
@@ -22,11 +23,18 @@ class UpdatePropietarioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => 'sometimes|required|string|max:100',
+            'nombres' => 'sometimes|required|string|max:100',
+            'apellidos' => 'sometimes|required|string|max:100',
+            'documento' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('propietarios')->ignore(request()->route('propietario'))
+            ],
             'telefono' => 'sometimes|nullable|string|max:20',
-            'tipo_boleta' => 'sometimes|nullable|string|max:50',
-            'numero_boleta' => 'sometimes|nullable|string|max:50',
-            'id_registro' => 'sometimes|nullable|integer',
+            'email' => 'sometimes|nullable|email|max:100',
+            'direccion' => 'sometimes|nullable|string|max:255',
         ];
     }
 

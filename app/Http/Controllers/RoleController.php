@@ -19,7 +19,10 @@ class RoleController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $roles = Role::orderBy('id', 'desc')->paginate(15);
+            // Obtener roles con conteo de usuarios
+            $roles = Role::withCount('users')
+                        ->orderBy('id', 'desc')
+                        ->paginate(15);
 
             return response()->json([
                 'success' => true,

@@ -7,6 +7,11 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\TipoVehiculoController;
+use App\Http\Controllers\PropietarioController;
+use App\Http\Controllers\VehiculoController;
+use App\Http\Controllers\VehiculoPropietarioController;
+use App\Http\Controllers\ToleranciaController;
 
 // ================================
 // RUTAS PÚBLICAS (No requieren autenticación)
@@ -85,9 +90,19 @@ Route::middleware('auth:sanctum')->group(function () {
     // CRUD DE COMPANIES (Solo usuarios autenticados)
     // ================================
     Route::prefix('companies')->group(function () {
+        // Rutas de consulta y CRUD básico
         Route::get('/', [CompanyController::class, 'index']);           // GET /api/companies - Listar companies
         Route::post('/', [CompanyController::class, 'store']);          // POST /api/companies - Crear company
         Route::get('/search', [CompanyController::class, 'search']);    // GET /api/companies/search?query=termino - Buscar companies
+
+        // Rutas de gestión de estados
+        Route::get('/statuses', [CompanyController::class, 'getAvailableStatuses']);    // GET /api/companies/statuses - Estados disponibles
+        Route::get('/by-status', [CompanyController::class, 'getByStatus']);            // GET /api/companies/by-status?estado=activo - Filtrar por estado
+        Route::patch('/{id}/activate', [CompanyController::class, 'activate']);         // PATCH /api/companies/{id}/activate - Activar company
+        Route::patch('/{id}/suspend', [CompanyController::class, 'suspend']);           // PATCH /api/companies/{id}/suspend - Suspender company
+        Route::patch('/{id}/change-status', [CompanyController::class, 'changeStatus']); // PATCH /api/companies/{id}/change-status - Cambiar estado
+
+        // Rutas CRUD individuales
         Route::get('/{id}', [CompanyController::class, 'show']);        // GET /api/companies/{id} - Mostrar company
         Route::put('/{id}', [CompanyController::class, 'update']);      // PUT /api/companies/{id} - Actualizar company
         Route::delete('/{id}', [CompanyController::class, 'destroy']);  // DELETE /api/companies/{id} - Eliminar company
@@ -103,6 +118,69 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{role}', [RoleController::class, 'show']);         // GET /api/roles/{id} - Mostrar role
         Route::put('/{role}', [RoleController::class, 'update']);       // PUT /api/roles/{id} - Actualizar role
         Route::delete('/{role}', [RoleController::class, 'destroy']);   // DELETE /api/roles/{id} - Eliminar role
+    });
+
+    // ================================
+    // CRUD DE TIPOS DE VEHÍCULO (Solo usuarios autenticados)
+    // ================================
+    Route::prefix('tipo-vehiculos')->name('tipo-vehiculos.')->group(function () {
+        // Rutas de consulta y CRUD básico
+        Route::get('/', [TipoVehiculoController::class, 'index']);          // GET /api/tipo-vehiculos - Listar tipos de vehículo
+        Route::post('/', [TipoVehiculoController::class, 'store']);         // POST /api/tipo-vehiculos - Crear tipo de vehículo
+        Route::get('/search', [TipoVehiculoController::class, 'search']);   // GET /api/tipo-vehiculos/search?query=termino - Buscar tipos de vehículo
+
+        // Rutas de filtrado especializado
+        Route::get('/con-valor', [TipoVehiculoController::class, 'conValor']);          // GET /api/tipo-vehiculos/con-valor - Solo con valor definido
+        Route::get('/rango-valor', [TipoVehiculoController::class, 'porRangoValor']);   // GET /api/tipo-vehiculos/rango-valor?min=10&max=100 - Por rango de valor
+
+        // Rutas CRUD individuales
+        Route::get('/{tipo_vehiculo}', [TipoVehiculoController::class, 'show']);        // GET /api/tipo-vehiculos/{id} - Mostrar tipo de vehículo
+        Route::put('/{tipo_vehiculo}', [TipoVehiculoController::class, 'update']);      // PUT /api/tipo-vehiculos/{id} - Actualizar tipo de vehículo
+        Route::delete('/{tipo_vehiculo}', [TipoVehiculoController::class, 'destroy']);  // DELETE /api/tipo-vehiculos/{id} - Eliminar tipo de vehículo
+    });
+
+    // ================================
+    // CRUD DE PROPIETARIOS (Solo usuarios autenticados)
+    // ================================
+    Route::prefix('propietarios')->name('propietarios.')->group(function () {
+        Route::get('/', [PropietarioController::class, 'index']);              // GET /api/propietarios - Listar propietarios
+        Route::post('/', [PropietarioController::class, 'store']);             // POST /api/propietarios - Crear propietario
+        Route::get('/{propietario}', [PropietarioController::class, 'show']);  // GET /api/propietarios/{id} - Mostrar propietario
+        Route::put('/{propietario}', [PropietarioController::class, 'update']); // PUT /api/propietarios/{id} - Actualizar propietario
+        Route::delete('/{propietario}', [PropietarioController::class, 'destroy']); // DELETE /api/propietarios/{id} - Eliminar propietario
+    });
+
+    // ================================
+    // CRUD DE VEHÍCULOS (Solo usuarios autenticados)
+    // ================================
+    Route::prefix('vehiculos')->name('vehiculos.')->group(function () {
+        Route::get('/', [VehiculoController::class, 'index']);              // GET /api/vehiculos - Listar vehículos
+        Route::post('/', [VehiculoController::class, 'store']);             // POST /api/vehiculos - Crear vehículo
+        Route::get('/{vehiculo}', [VehiculoController::class, 'show']);      // GET /api/vehiculos/{id} - Mostrar vehículo
+        Route::put('/{vehiculo}', [VehiculoController::class, 'update']);    // PUT /api/vehiculos/{id} - Actualizar vehículo
+        Route::delete('/{vehiculo}', [VehiculoController::class, 'destroy']); // DELETE /api/vehiculos/{id} - Eliminar vehículo
+    });
+
+    // ================================
+    // CRUD DE RELACIONES VEHÍCULO-PROPIETARIO (Solo usuarios autenticados)
+    // ================================
+    Route::prefix('vehiculo-propietarios')->name('vehiculo-propietarios.')->group(function () {
+        Route::get('/', [VehiculoPropietarioController::class, 'index']);              // GET /api/vehiculo-propietarios - Listar relaciones
+        Route::post('/', [VehiculoPropietarioController::class, 'store']);             // POST /api/vehiculo-propietarios - Crear relación
+        Route::get('/{vehiculoPropietario}', [VehiculoPropietarioController::class, 'show']);      // GET /api/vehiculo-propietarios/{id} - Mostrar relación
+        Route::put('/{vehiculoPropietario}', [VehiculoPropietarioController::class, 'update']);    // PUT /api/vehiculo-propietarios/{id} - Actualizar relación
+        Route::delete('/{vehiculoPropietario}', [VehiculoPropietarioController::class, 'destroy']); // DELETE /api/vehiculo-propietarios/{id} - Eliminar relación
+    });
+
+    // ================================
+    // CRUD DE TOLERANCIAS (Solo usuarios autenticados)
+    // ================================
+    Route::prefix('tolerancias')->name('tolerancias.')->group(function () {
+        Route::get('/', [ToleranciaController::class, 'index']);              // GET /api/tolerancias - Listar tolerancias
+        Route::post('/', [ToleranciaController::class, 'store']);             // POST /api/tolerancias - Crear tolerancia
+        Route::get('/{tolerancia}', [ToleranciaController::class, 'show']);    // GET /api/tolerancias/{id} - Mostrar tolerancia
+        Route::put('/{tolerancia}', [ToleranciaController::class, 'update']);  // PUT /api/tolerancias/{id} - Actualizar tolerancia
+        Route::delete('/{tolerancia}', [ToleranciaController::class, 'destroy']); // DELETE /api/tolerancias/{id} - Eliminar tolerancia
     });
 });
 // ================================

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Company;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateCompanyRequest extends FormRequest
@@ -26,6 +27,7 @@ class UpdateCompanyRequest extends FormRequest
             'ubicacion' => ['nullable', 'string', 'max:255'],
             'logo' => ['nullable', 'string'],
             'descripcion' => ['nullable', 'string'],
+            'estado' => ['nullable', 'in:' . implode(',', Company::getEstadosDisponibles())],
         ];
     }
 
@@ -42,6 +44,7 @@ class UpdateCompanyRequest extends FormRequest
             'ubicacion.max' => 'La ubicación no puede tener más de 255 caracteres.',
             'logo.string' => 'El logo debe ser una cadena de texto.',
             'descripcion.string' => 'La descripción debe ser una cadena de texto.',
+            'estado.in' => 'El estado debe ser uno de los valores permitidos: ' . implode(', ', Company::getEstadosDisponibles()) . '.',
         ];
     }
 }

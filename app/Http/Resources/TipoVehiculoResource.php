@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CompanyResource extends JsonResource
+class TipoVehiculoResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,16 +17,10 @@ class CompanyResource extends JsonResource
         return [
             'id' => $this->id,
             'nombre' => $this->nombre,
-            'ubicacion' => $this->ubicacion,
-            'logo' => $this->logo,
-            'descripcion' => $this->descripcion,
-            'estado' => $this->estado,
-            'estado_info' => [
-                'label' => ucfirst($this->estado),
-                'is_active' => $this->isActive(),
-                'is_suspended' => $this->isSuspended(),
-            ],
-            'users_count' => $this->users_count ?? 0,
+            'nombre_formateado' => $this->nombre_formateado,
+            'valor' => $this->valor,
+            'valor_formateado' => $this->getValorFormateado(),
+            'tiene_valor' => $this->tieneValor(),
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
         ];

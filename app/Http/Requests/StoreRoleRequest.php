@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Role;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreRoleRequest extends FormRequest
@@ -22,7 +23,8 @@ class StoreRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'descripcion' => 'required|string|max:50|unique:roles,descripcion'
+            'descripcion' => 'required|string|max:50|unique:roles,descripcion',
+            'estado' => 'nullable|in:' . implode(',', Role::getEstadosDisponibles())
         ];
     }
 
@@ -37,7 +39,8 @@ class StoreRoleRequest extends FormRequest
             'descripcion.required' => 'La descripción del role es requerida',
             'descripcion.string' => 'La descripción debe ser un texto válido',
             'descripcion.max' => 'La descripción no puede tener más de 50 caracteres',
-            'descripcion.unique' => 'Ya existe un role con esta descripción'
+            'descripcion.unique' => 'Ya existe un role con esta descripción',
+            'estado.in' => 'El estado debe ser uno de los valores permitidos: ' . implode(', ', Role::getEstadosDisponibles()) . '.'
         ];
     }
 }

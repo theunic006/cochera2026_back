@@ -23,8 +23,8 @@ class StorePropietarioRequest extends FormRequest
     {
         return [
             'nombres' => 'required|string|max:100',
-            'apellidos' => 'required|string|max:100',
-            'documento' => 'required|string|max:50|unique:propietarios,documento',
+            'apellidos' => 'nullable|string|max:100',
+            'documento' => 'nullable|string|max:50',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:100',
             'direccion' => 'nullable|string|max:255',
@@ -56,17 +56,4 @@ class StorePropietarioRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom attributes for validator errors.
-     */
-    public function attributes(): array
-    {
-        return [
-            'nombre' => 'nombre del propietario',
-            'telefono' => 'teléfono',
-            'tipo_boleta' => 'tipo de boleta',
-            'numero_boleta' => 'número de boleta',
-            'id_registro' => 'ID de registro',
-        ];
-    }
 }

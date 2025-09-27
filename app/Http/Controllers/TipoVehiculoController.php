@@ -18,11 +18,13 @@ class TipoVehiculoController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $perPage = $request->get('per_page', 10);
-            $page = $request->get('page', 1);
-
+            $perPage = $request->get('per_page', 15);
+            $allowed = [10, 15, 20, 30, 50, 100];
+            if (!in_array((int)$perPage, $allowed)) {
+                $perPage = 15;
+            }
             $tiposVehiculo = TipoVehiculo::orderBy('nombre', 'asc')
-                                       ->paginate($perPage, ['*'], 'page', $page);
+                                       ->paginate($perPage);
 
             return response()->json([
                 'success' => true,

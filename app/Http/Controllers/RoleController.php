@@ -19,10 +19,15 @@ class RoleController extends Controller
     public function index(): JsonResponse
     {
         try {
+            $perPage = request()->query('per_page', 15);
+            $allowed = [10, 15, 20, 30, 50, 100];
+            if (!in_array((int)$perPage, $allowed)) {
+                $perPage = 15;
+            }
             // Obtener roles con conteo de usuarios
             $roles = Role::withCount('users')
                         ->orderBy('id', 'desc')
-                        ->paginate(15);
+                        ->paginate($perPage);
 
             return response()->json([
                 'success' => true,

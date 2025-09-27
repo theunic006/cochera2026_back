@@ -41,7 +41,12 @@ class VehiculoController extends Controller
             $query->where('marca', 'like', '%' . $request->get('marca') . '%');
         }
 
-        $vehiculos = $query->orderBy('placa')->paginate(15);
+        $perPage = $request->get('per_page', 15);
+        $allowed = [10, 15, 20, 30, 50, 100];
+        if (!in_array((int)$perPage, $allowed)) {
+            $perPage = 15;
+        }
+        $vehiculos = $query->orderBy('placa')->paginate($perPage);
 
         return response()->json([
             'success' => true,

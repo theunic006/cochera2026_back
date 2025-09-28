@@ -46,9 +46,7 @@ class Vehiculo extends Model
      */
     protected $hidden = [];
 
-    /**
-     * Relación con TipoVehiculo
-     */
+    // Relación con tipo de vehículo
     public function tipoVehiculo()
     {
         return $this->belongsTo(TipoVehiculo::class, 'tipo_vehiculo_id');

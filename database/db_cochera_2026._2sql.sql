@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `cochera2026`.`empresa` (
 
 
 -- -----------------------------------------------------
--- Table `cochera2026`.`rol`
+
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cochera2026`.`roles` (
   `id` INT NULL DEFAULT NULL AUTO_INCREMENT,
@@ -284,20 +284,25 @@ CREATE TABLE IF NOT EXISTS `cochera2026`.`tarifa` (
 -- Table `cochera2026`.`log`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cochera2026`.`log` (
-  `id` INT NULL DEFAULT NULL AUTO_INCREMENT,
-  `accion` VARCHAR(255) NULL DEFAULT NULL,
-  `id_user` INT NULL DEFAULT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `accion` VARCHAR(255) NULL,
+  `id_user` INT NULL,
   `fecha` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
-  `id_empresa` INT NULL DEFAULT NULL,
+  `id_empresa` INT NULL,
+  `ip` VARCHAR(45) NULL,
+  `detalle` TEXT NULL,
+  `estado` VARCHAR(20) NULL DEFAULT 'exitoso',
+  `user_agent` VARCHAR(255) NULL,
   PRIMARY KEY (`id`),
-  INDEX (`id_user` ASC) VISIBLE,
-  INDEX (`id_empresa` ASC) VISIBLE,
-  CONSTRAINT ``
+  INDEX `idx_log_user` (`id_user` ASC),
+  INDEX `idx_log_empresa` (`id_empresa` ASC),
+  CONSTRAINT `fk_log_user`
     FOREIGN KEY (`id_user`)
     REFERENCES `cochera2026`.`user` (`id`),
-  CONSTRAINT ``
+  CONSTRAINT `fk_log_empresa`
     FOREIGN KEY (`id_empresa`)
-    REFERENCES `cochera2026`.`empresa` (`id`));
+    REFERENCES `cochera2026`.`empresa` (`id`)
+);
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

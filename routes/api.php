@@ -12,10 +12,15 @@ use App\Http\Controllers\PropietarioController;
 use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\VehiculoPropietarioController;
 use App\Http\Controllers\ToleranciaController;
+use App\Http\Controllers\RegistroController;
+use App\Http\Controllers\IngresoController;
 
 // ================================
 // RUTAS PÚBLICAS (No requieren autenticación)
 // ================================
+
+// CRUD de ingresos
+Route::apiResource('ingresos', IngresoController::class);
 
 // Rutas de suscriptores públicas
 Route::prefix('suscribers')->group(function () {
@@ -181,6 +186,29 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{tolerancia}', [ToleranciaController::class, 'show']);    // GET /api/tolerancias/{id} - Mostrar tolerancia
         Route::put('/{tolerancia}', [ToleranciaController::class, 'update']);  // PUT /api/tolerancias/{id} - Actualizar tolerancia
         Route::delete('/{tolerancia}', [ToleranciaController::class, 'destroy']); // DELETE /api/tolerancias/{id} - Eliminar tolerancia
+    });
+
+    // ================================
+    // CRUD DE REGISTROS (Solo usuarios autenticados)
+    // ================================
+    Route::prefix('registros')->group(function () {
+        Route::get('/', [RegistroController::class, 'index']);              // GET /api/registros - Listar registros
+        Route::post('/', [RegistroController::class, 'store']);             // POST /api/registros - Crear registro
+        Route::get('/{registro}', [RegistroController::class, 'show']);     // GET /api/registros/{id} - Mostrar registro
+        Route::put('/{registro}', [RegistroController::class, 'update']);   // PUT /api/registros/{id} - Actualizar registro
+        Route::delete('/{registro}', [RegistroController::class, 'destroy']); // DELETE /api/registros/{id} - Eliminar registro
+    });
+
+    // ================================
+    // CRUD DE INGRESOS
+    // ================================
+
+    Route::prefix('ingresos')->group(function () {
+        Route::get('/', [IngresoController::class, 'index']);              // GET /api/ingresos - Listar ingresos
+        Route::post('/', [IngresoController::class, 'store']);             // POST /api/ingresos - Crear ingreso
+        Route::get('/{ingreso}', [IngresoController::class, 'show']);     // GET /api/ingresos/{id} - Mostrar ingreso
+        Route::put('/{ingreso}', [IngresoController::class, 'update']);   // PUT /api/ingresos/{id} - Actualizar ingreso
+        Route::delete('/{ingreso}', [IngresoController::class, 'destroy']); // DELETE /api/ingresos/{id} - Eliminar ingreso
     });
 });
 // ================================

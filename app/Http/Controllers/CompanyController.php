@@ -100,7 +100,7 @@ class CompanyController extends Controller
             DB::rollback();
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear la company y usuario administrador',
+                'message' => 'Error al crear la Empresa',
                 'error' => $e->getMessage()
             ], 500);
         }

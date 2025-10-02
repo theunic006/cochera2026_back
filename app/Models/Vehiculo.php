@@ -10,6 +10,13 @@ class Vehiculo extends Model
     use HasFactory;
 
     /**
+     * Relación: Un vehículo tiene muchas observaciones
+     */
+    public function observaciones()
+    {
+        return $this->hasMany(\App\Models\Observacion::class, 'id_vehiculo', 'id');
+    }
+    /**
      * The table associated with the model.
      */
     protected $table = 'vehiculos';
@@ -24,6 +31,7 @@ class Vehiculo extends Model
         'color',
         'anio',
         'tipo_vehiculo_id',
+        'frecuencia',
     ];
 
     /**

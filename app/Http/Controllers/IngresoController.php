@@ -23,7 +23,7 @@ class IngresoController extends Controller
             $perPage = 15;
         }
         try {
-            $ingresos = Ingreso::orderBy('created_at', 'desc')->paginate($perPage);
+            $ingresos = Ingreso::with(['vehiculo.tipoVehiculo', 'observaciones'])->orderBy('created_at', 'desc')->paginate($perPage);
             return response()->json([
                 'success' => true,
                 'message' => 'Ingresos obtenidos exitosamente',
@@ -50,7 +50,16 @@ class IngresoController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            $ingreso = Ingreso::create($request->all());
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $userId = $user ? $user->id : null;
+            $companyId = $user && $user->company ? $user->company->id : null;
+
+            $data = $request->all();
+            $data['id_user'] = $userId;
+            $data['id_company'] = $companyId;
+
+
+            $ingreso = Ingreso::create($data);
             return response()->json([
                 'success' => true,
                 'message' => 'Ingreso creado exitosamente',
@@ -71,7 +80,7 @@ class IngresoController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
-            $ingreso = Ingreso::find($id);
+            $ingreso = Ingreso::with(['user', 'vehiculo.tipoVehiculo'])->find($id);
             if (!$ingreso) {
                 return response()->json([
                     'success' => false,
@@ -81,7 +90,7 @@ class IngresoController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Ingreso obtenido exitosamente',
-                'data' => $ingreso
+                'data' => new IngresoResource($ingreso)
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -92,25 +101,64 @@ class IngresoController extends Controller
         }
     }
 
+
     /**
      * Actualizar un ingreso específico
      */
     public function update(Request $request, string $id): JsonResponse
     {
         try {
-            $ingreso = Ingreso::find($id);
+            $ingreso = Ingreso::with('vehiculo')->find($id);
             if (!$ingreso) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Ingreso no encontrado'
                 ], 404);
             }
-            $validated = $request->all();
-            $ingreso->update($validated);
+            $data = $request->all();
+
+            // Actualizar ingreso (fecha y hora)
+            if (isset($data['fecha_ingreso'])) {
+                $ingreso->fecha_ingreso = $data['fecha_ingreso'];
+            }
+            if (isset($data['hora_ingreso'])) {
+                $ingreso->hora_ingreso = $data['hora_ingreso'];
+            }
+            $ingreso->save();
+
+            // Actualizar datos del vehículo relacionado
+            $vehiculo = $ingreso->vehiculo;
+            if ($vehiculo) {
+                if (isset($data['vehiculo']['placa'])) {
+                    $vehiculo->placa = $data['vehiculo']['placa'];
+                }
+                if (isset($data['vehiculo']['tipo_vehiculo_id'])) {
+                    $vehiculo->tipo_vehiculo_id = $data['vehiculo']['tipo_vehiculo_id'];
+                }
+                $vehiculo->save();
+            }
+
+            // Guardar observación si viene en el request
+            if (isset($data['observacion']) && is_array($data['observacion'])) {
+                $obsData = $data['observacion'];
+                // Solo guardar si la descripción no está vacía
+                if (!empty($obsData['descripcion'])) {
+                    $user = \Illuminate\Support\Facades\Auth::user();
+                    if ($user) {
+                        $obsData['id_usuario'] = $user->id;
+                        $obsData['id_empresa'] = $user->company->id ?? null;
+                    }
+                    \App\Models\Observacion::create($obsData);
+                }
+            }
+
+            // Recargar relaciones para la respuesta
+            $ingreso->load(['user', 'vehiculo.tipoVehiculo', 'vehiculo.observaciones']);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Ingreso actualizado exitosamente',
-                'data' => $ingreso
+                'data' => new IngresoResource($ingreso)
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -134,10 +182,53 @@ class IngresoController extends Controller
                     'message' => 'Ingreso no encontrado'
                 ], 404);
             }
+
+            // Guardar registro antes de eliminar, incluyendo fecha/hora ingreso
+            $registro = \App\Models\Registro::create([
+                'id_vehiculo' => $ingreso->id_vehiculo,
+                'id_user' => $ingreso->id_user,
+                'id_empresa' => $ingreso->id_empresa,
+                'fecha' => now(),
+                'fecha_ingreso' => $ingreso->fecha_ingreso,
+                'hora_ingreso' => $ingreso->hora_ingreso,
+            ]);
+            $nuevoIdRegistro = $registro->id;
+
+            // Calcular tiempo de permanencia
+            $fechaIngreso = $ingreso->fecha_ingreso;
+            $horaIngreso = $ingreso->hora_ingreso;
+            $fechaSalida = now()->toDateString();
+            $horaSalida = now()->format('H:i:s');
+
+            $entrada = \Carbon\Carbon::parse("$fechaIngreso $horaIngreso");
+            $salida = \Carbon\Carbon::parse("$fechaSalida $horaSalida");
+            $diff = $entrada->diff($salida);
+            $tiempo = $diff->format('%H:%I:%S');
+
+            // Permitir sobreescribir tiempo y precio desde el body
+            $body = request()->all();
+            $tiempoSalida = $body['tiempo'] ?? $tiempo;
+            $precioSalida = $body['precio'] ?? 3;
+            $tipoPago = $body['tipo_pago'] ?? null;
+
+            // Guardar salida
+            $salidaModel = \App\Models\Salida::create([
+                'fecha_salida' => $fechaSalida,
+                'hora_salida' => $horaSalida,
+                'tiempo' => $tiempoSalida,
+                'precio' => $precioSalida,
+                'tipo_pago' => $tipoPago,
+                'id_registro' => $nuevoIdRegistro,
+                'id_user' => $ingreso->id_user,
+                'id_empresa' => $ingreso->id_empresa,
+            ]);
+
             $ingreso->delete();
             return response()->json([
                 'success' => true,
-                'message' => 'Ingreso eliminado exitosamente'
+                'message' => 'Ingreso eliminado, registro y salida creados exitosamente',
+                'registro' => $registro,
+                'salida' => $salidaModel
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

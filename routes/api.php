@@ -14,6 +14,8 @@ use App\Http\Controllers\VehiculoPropietarioController;
 use App\Http\Controllers\ToleranciaController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\IngresoController;
+use App\Http\Controllers\SalidaController;
+use App\Http\Controllers\ObservacionController;
 
 // ================================
 // RUTAS PÚBLICAS (No requieren autenticación)
@@ -27,6 +29,9 @@ Route::prefix('suscribers')->group(function () {
     Route::get('/', [SuscriberController::class, 'index']);          // GET /api/suscribers - Listar suscriptores
     Route::post('/', [SuscriberController::class, 'store']);         // POST /api/suscribers - Crear suscriptor
 });
+
+// Ruta pública para registrar usuario sin autenticación
+Route::post('/public-register', [\App\Http\Controllers\AuthController::class, 'register']);
 
 // ================================
 // AUTENTICACIÓN PÚBLICA (Solo login)
@@ -209,6 +214,27 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{ingreso}', [IngresoController::class, 'show']);     // GET /api/ingresos/{id} - Mostrar ingreso
         Route::put('/{ingreso}', [IngresoController::class, 'update']);   // PUT /api/ingresos/{id} - Actualizar ingreso
         Route::delete('/{ingreso}', [IngresoController::class, 'destroy']); // DELETE /api/ingresos/{id} - Eliminar ingreso
+    });
+
+    // ================================
+    // CRUD DE SALIDAS
+    // ================================
+
+    Route::prefix('salidas')->group(function () {
+        Route::get('/', [SalidaController::class, 'index']);              // GET /api/salidas - Listar salidas
+        Route::post('/', [SalidaController::class, 'store']);             // POST /api/salidas - Crear salida
+        Route::get('/{salida}', [SalidaController::class, 'show']);     // GET /api/salidas/{id} - Mostrar salida
+    });
+
+    // ================================
+    // CRUD DE OBSERVACIONES (Solo usuarios autenticados)
+    // ================================
+        Route::prefix('observaciones')->group(function () {
+        Route::get('/', [ObservacionController::class, 'index']);              // GET /api/observaciones - Listar observaciones
+        Route::post('/', [ObservacionController::class, 'store']);             // POST /api/observaciones - Crear observación
+        Route::get('/{observacion}', [ObservacionController::class, 'show']);     // GET /api/observaciones/{id} - Mostrar observación
+        Route::put('/{observacion}', [ObservacionController::class, 'update']);   // PUT /api/observaciones/{id} - Actualizar observación
+        Route::delete('/{observacion}', [ObservacionController::class, 'destroy']); // DELETE /api/observaciones/{id} - Eliminar observación
     });
 });
 // ================================

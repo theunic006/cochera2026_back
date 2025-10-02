@@ -21,6 +21,7 @@ class VehiculoResource extends JsonResource
             'modelo' => $this->modelo,
             'color' => $this->color,
             'anio' => $this->anio,
+            'frecuencia' => $this->frecuencia,
             'tipo_vehiculo_id' => $this->tipo_vehiculo_id,
 
             // Información completa del tipo de vehículo
@@ -32,7 +33,10 @@ class VehiculoResource extends JsonResource
                 ];
             }),
 
-             // Campos calculados útiles
+            // Observaciones del vehículo
+            'observaciones' => ObservacionResource::collection($this->whenLoaded('observaciones')),
+
+            // Campos calculados útiles
             'descripcion_completa' => $this->placa . ' - ' . $this->marca . ' ' . $this->modelo,
             'tipo_vehiculo_nombre' => $this->tipoVehiculo?->nombre ?? 'Sin tipo asignado',
             'anio_formateado' => $this->anio ? 'Año ' . $this->anio : 'Año no especificado',

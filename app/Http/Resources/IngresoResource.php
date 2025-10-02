@@ -7,15 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class IngresoResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    //mostrar placa(boton)->editar
-    //mostrar hora ingreso
-    // mostrar saldo
-    // mostrar
+
     public function toArray(Request $request): array
     {
         return [
@@ -25,7 +17,8 @@ class IngresoResource extends JsonResource
             'id_user' => $this->id_user,
             'id_empresa' => $this->id_empresa,
             'id_vehiculo' => $this->id_vehiculo,
-            'vehiculo' => new VehiculoResource($this->vehiculo),
+            'user' => new UserResource($this->user),
+            'vehiculo' => new VehiculoResource($this->vehiculo->loadMissing('observaciones')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

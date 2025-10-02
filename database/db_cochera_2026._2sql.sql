@@ -237,26 +237,15 @@ CREATE TABLE IF NOT EXISTS `cochera2026`.`observaciones` (
   `tipo` VARCHAR(50) NULL DEFAULT NULL,
   `descripcion` TEXT NULL DEFAULT NULL,
   `id_registro` INT NULL DEFAULT NULL,
+  `id_vehiculo` INT NULL DEFAULT NULL,
   `id_ingreso` INT NULL DEFAULT NULL,
-  `id_salida` INT NULL DEFAULT NULL,
   `id_empresa` INT NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   INDEX (`id_registro` ASC) VISIBLE,
   INDEX (`id_ingreso` ASC) VISIBLE,
-  INDEX (`id_salida` ASC) VISIBLE,
   INDEX (`id_empresa` ASC) VISIBLE,
-  CONSTRAINT ``
-    FOREIGN KEY (`id_registro`)
-    REFERENCES `cochera2026`.`registro` (`id`),
-  CONSTRAINT ``
-    FOREIGN KEY (`id_ingreso`)
-    REFERENCES `cochera2026`.`ingreso` (`id`),
-  CONSTRAINT ``
-    FOREIGN KEY (`id_salida`)
-    REFERENCES `cochera2026`.`salida` (`id`),
-  CONSTRAINT ``
-    FOREIGN KEY (`id_empresa`)
-    REFERENCES `cochera2026`.`empresa` (`id`));
+  INDEX (`id_vehiculo` ASC) VISIBLE,
+);
 
 
 -- -----------------------------------------------------

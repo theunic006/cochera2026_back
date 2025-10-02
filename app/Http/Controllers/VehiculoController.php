@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateVehiculoRequest;
 use App\Http\Resources\VehiculoResource;
 use App\Models\Vehiculo;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -67,8 +68,6 @@ class VehiculoController extends Controller
     public function store(StoreVehiculoRequest $request): JsonResponse
     {
         $data = $request->validated();
-
-        // Establecer tipo_vehiculo_id = 1 si está vacío o es null
         if (empty($data['tipo_vehiculo_id'])) {
             $data['tipo_vehiculo_id'] = 1;
         }
@@ -77,53 +76,62 @@ class VehiculoController extends Controller
         try {
             // Buscar si la placa ya existe
             $vehiculo = Vehiculo::where('placa', $data['placa'])->first();
-
+            $vehiculoCreated = false;
             $comentario = '';
+            $ingreso = null;
+            $registro = null;
+
             if (!$vehiculo) {
-                // Si no existe, crear el vehículo
+                $data['frecuencia'] = 1;
                 $vehiculo = Vehiculo::create($data);
-                $vehiculo->load('tipoVehiculo');
                 $vehiculoCreated = true;
             } else {
-                $vehiculoCreated = false;
+                $vehiculo->frecuencia = ($vehiculo->frecuencia ?? 0) + 1;
+                $vehiculo->save();
             }
+
+            $vehiculo->load('tipoVehiculo');
 
             // Verificar si ya existe ingreso para el vehículo
             $existeIngreso = \App\Models\Ingreso::where('id_vehiculo', $vehiculo->id)->exists();
-            if (!$vehiculo && !$existeIngreso) {
-                $comentario = 'No existe placa: se guardó en vehiculos, ingresos y registros.';
-            } elseif ($vehiculo && !$existeIngreso) {
-                $comentario = 'Existe placa: se guardó en ingresos y registros.';
-            } elseif ($vehiculo && $existeIngreso) {
-                $comentario = 'Ya existe ingreso: solo se guardó en registros.';
+            if ($existeIngreso) {
+                $comentario = 'Ya existe ingreso: NO se guardó nada.';
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'No se guardó nada porque ya existe ingreso para este vehículo.',
+                    'comentario' => $comentario,
+                    'vehiculo' => new VehiculoResource($vehiculo),
+                    'ingreso' => null,
+                    'registro' => null
+                ], 200);
             }
 
-            if (!$existeIngreso) {
-                $ingreso = \App\Models\Ingreso::create([
-                    'fecha_ingreso' => now()->toDateString(),
-                    'hora_ingreso' => now()->format('H:i:s'),
-                    'id_user' => $data['id_user'] ?? 1,
-                    'id_empresa' => $data['id_empresa'] ?? 1,
-                    'id_vehiculo' => $vehiculo->id,
-                ]);
-            } else {
-                $ingreso = null;
-            }
+            // Si no existe ingreso, guardar ingreso y registro
+            $user = Auth::user();
+            $userId = $user ? $user->id : null;
+            $empresaId = $user && $user->company ? $user->company->id : null;
 
-            // Crear registro relacionado
-            $registro = \App\Models\Registro::create([
+            $ingreso = \App\Models\Ingreso::create([
+                'fecha_ingreso' => now()->toDateString(),
+                'hora_ingreso' => now()->format('H:i:s'),
+                'id_user' => $userId,
+                'id_empresa' => $empresaId,
                 'id_vehiculo' => $vehiculo->id,
-                'id_user' => $data['id_user'] ?? 1,
-                'id_empresa' => $data['id_empresa'] ?? 1,
-                'fecha' => now(),
             ]);
+            // Si tienes lógica para registro, descomenta y ajusta aquí
+            // $registro = ...
+
+            $comentario = $vehiculoCreated
+                ? 'No existe placa: se guardó en vehiculos, ingresos y registros.'
+                : 'Existe placa: se guardó en ingresos y registros.';
 
             DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => $vehiculoCreated
                     ? 'Vehículo, ingreso y registro creados exitosamente'
-                    : ($ingreso ? 'Ingreso y registro creados exitosamente (vehículo ya existe)' : 'Solo registro creado (vehículo e ingreso ya existen)'),
+                    : 'Ingreso y registro creados exitosamente (vehículo ya existe)',
                 'comentario' => $comentario,
                 'vehiculo' => new VehiculoResource($vehiculo),
                 'ingreso' => $ingreso,
@@ -138,20 +146,6 @@ class VehiculoController extends Controller
             ], 500);
         }
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Vehiculo $vehiculo): JsonResponse
-    {
-        $vehiculo->load('tipoVehiculo');
-
-        return response()->json([
-            'success' => true,
-            'data' => new VehiculoResource($vehiculo)
-        ]);
-    }
-
     /**
      * Update the specified resource in storage.
      */
@@ -173,6 +167,20 @@ class VehiculoController extends Controller
             'data' => new VehiculoResource($vehiculo)
         ]);
     }
+    /**
+     * Display the specified resource.
+     */
+    public function show(Vehiculo $vehiculo): JsonResponse
+    {
+        $vehiculo->load('tipoVehiculo');
+
+        return response()->json([
+            'success' => true,
+            'data' => new VehiculoResource($vehiculo)
+        ]);
+    }
+
+
 
     /**
      * Remove the specified resource from storage.
@@ -185,5 +193,14 @@ class VehiculoController extends Controller
             'success' => true,
             'message' => 'Vehículo eliminado exitosamente'
         ]);
+
+        /*
+            $registro = \App\Models\Registro::create([
+                'id_vehiculo' => $vehiculo->id,
+                'id_user' => $userId,
+                'id_empresa' => $empresaId,
+                'fecha' => now(),
+            ]);
+*/
     }
 }

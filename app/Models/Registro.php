@@ -14,6 +14,8 @@ class Registro extends Model
         'id_user',
         'id_empresa',
         'fecha',
+        'fecha_ingreso',
+        'hora_ingreso',
     ];
     // Relación con vehículo
     public function vehiculo()

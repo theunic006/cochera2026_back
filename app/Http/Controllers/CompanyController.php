@@ -59,23 +59,27 @@ class CompanyController extends Controller
     public function store(StoreCompanyRequest $request): JsonResponse
     {
         try {
-            // Usar transacción para asegurar que ambas operaciones se completen
             DB::beginTransaction();
 
-            // Crear la company
-            $company = Company::create($request->validated());
+            $data = $request->validated();
 
-            // Password fijo para el usuario administrador
-            $password = 'admin123456';
+            // Manejo de imagen/logo
+            if ($request->hasFile('logo')) {
+                $path = $request->file('logo')->store('companies', 'public');
+                $data['logo'] = $path;
+            }
 
-            // Crear usuario administrador automáticamente
+            $company = Company::create($data);
+
+            $password = '12345678';
             $adminUser = User::create([
                 'name' => 'Admin ' . $company->nombre,
                 'email' => 'admin@' . Str::slug($company->nombre) . '.com',
                 'password' => Hash::make($password),
                 'categoria' => 'Administrador',
-                'idrol' => 2, // Administrador General
+                'idrol' => 2,
                 'id_company' => $company->id,
+                'estado' => 'ACTIVO',
                 'email_verified_at' => now()
             ]);
 
@@ -90,7 +94,7 @@ class CompanyController extends Controller
                         'id' => $adminUser->id,
                         'name' => $adminUser->name,
                         'email' => $adminUser->email,
-                        'password' => $password, // Solo mostrar en creación
+                        'password' => $password,
                         'categoria' => $adminUser->categoria,
                         'role' => 'Administrador General'
                     ]
@@ -140,7 +144,15 @@ class CompanyController extends Controller
     {
         try {
             $company = Company::findOrFail($id);
-            $company->update($request->validated());
+            $data = $request->validated();
+
+            // Manejo de imagen/logo
+            if ($request->hasFile('logo')) {
+                $path = $request->file('logo')->store('companies', 'public');
+                $data['logo'] = $path;
+            }
+
+            $company->update($data);
 
             return response()->json([
                 'success' => true,

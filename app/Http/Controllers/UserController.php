@@ -23,7 +23,7 @@ class UserController extends Controller
             if (!in_array((int)$perPage, $allowed)) {
                 $perPage = 15;
             }
-            $users = User::orderBy('created_at', 'desc')->paginate($perPage);
+            $users = User::with(['role', 'company'])->orderBy('created_at', 'desc')->paginate($perPage);
 
             return response()->json([
                 'success' => true,
@@ -58,9 +58,9 @@ class UserController extends Controller
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
-                'categoria' => $validatedData['categoria'] ?? null,
                 'idrol' => $validatedData['idrol'] ?? null,
                 'id_company' => $validatedData['id_company'] ?? null,
+                'estado' => $validatedData['estado'] ?? 'ACTIVO',
             ]);
 
             // Cargar las relaciones para mostrar en la respuesta
@@ -141,9 +141,6 @@ class UserController extends Controller
                 $user->password = Hash::make($validated['password']);
             }
 
-            if (isset($validated['categoria'])) {
-                $user->categoria = $validated['categoria'];
-            }
 
             if (isset($validated['idrol'])) {
                 $user->idrol = $validated['idrol'];
@@ -151,6 +148,10 @@ class UserController extends Controller
 
             if (isset($validated['id_company'])) {
                 $user->id_company = $validated['id_company'];
+            }
+
+            if (isset($validated['estado'])) {
+                $user->estado = $validated['estado'];
             }
 
             $user->save();

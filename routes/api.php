@@ -21,9 +21,6 @@ use App\Http\Controllers\ObservacionController;
 // RUTAS PÚBLICAS (No requieren autenticación)
 // ================================
 
-// CRUD de ingresos
-Route::apiResource('ingresos', IngresoController::class);
-
 // Rutas de suscriptores públicas
 Route::prefix('suscribers')->group(function () {
     Route::get('/', [SuscriberController::class, 'index']);          // GET /api/suscribers - Listar suscriptores
@@ -31,7 +28,7 @@ Route::prefix('suscribers')->group(function () {
 });
 
 // Ruta pública para registrar usuario sin autenticación
-Route::post('/public-register', [\App\Http\Controllers\AuthController::class, 'register']);
+//Route::post('/public-register', [\App\Http\Controllers\AuthController::class, 'register']);
 
 // ================================
 // AUTENTICACIÓN PÚBLICA (Solo login)

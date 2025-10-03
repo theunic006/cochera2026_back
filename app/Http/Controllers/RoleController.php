@@ -24,8 +24,9 @@ class RoleController extends Controller
             if (!in_array((int)$perPage, $allowed)) {
                 $perPage = 15;
             }
-            // Obtener roles con conteo de usuarios
+            // Obtener roles con conteo de usuarios, excluyendo el id 1 (SUPERADMINISTRADOR)
             $roles = Role::withCount('users')
+                        ->where('id', '!=', 1)
                         ->orderBy('id', 'desc')
                         ->paginate($perPage);
 
@@ -79,6 +80,12 @@ class RoleController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
+            if ($id == 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Role no encontrado'
+                ], 404);
+            }
             $role = Role::findOrFail($id);
 
             return response()->json([

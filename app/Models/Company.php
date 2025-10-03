@@ -29,6 +29,7 @@ class Company extends Model
         'nombre',
         'ubicacion',
         'logo',
+        'capacidad',
         'descripcion',
         'estado',
     ];

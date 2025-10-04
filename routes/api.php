@@ -218,9 +218,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // ================================
 
     Route::prefix('salidas')->group(function () {
-        Route::get('/', [SalidaController::class, 'index']);              // GET /api/salidas - Listar salidas
-        Route::post('/', [SalidaController::class, 'store']);             // POST /api/salidas - Crear salida
-        Route::get('/{salida}', [SalidaController::class, 'show']);     // GET /api/salidas/{id} - Mostrar salida
+    Route::get('/', [SalidaController::class, 'index']);              // GET /api/salidas - Listar salidas
+    Route::get('/search', [SalidaController::class, 'search']);       // GET /api/salidas/search - Buscar salidas
+    Route::post('/', [SalidaController::class, 'store']);             // POST /api/salidas - Crear salida
+    Route::get('/{salida}', [SalidaController::class, 'show']);     // GET /api/salidas/{id} - Mostrar salida
     });
 
     // ================================

@@ -16,12 +16,14 @@ class SalidaResource extends JsonResource
             'tiempo' => $this->tiempo,
             'precio' => $this->precio,
             'tipo_pago' => $this->tipo_pago,
-            'id_ingreso' => $this->id_ingreso,
+            'id_registro' => $this->id_registro,
             'id_user' => $this->id_user,
             'id_empresa' => $this->id_empresa,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'ingreso' => $this->whenLoaded('ingreso'),
+            'registro' => $this->whenLoaded('registro', function () {
+                return new \App\Http\Resources\RegistroResource($this->registro);
+            }),
             'user' => $this->whenLoaded('user'),
             'empresa' => $this->whenLoaded('empresa'),
         ];

@@ -21,7 +21,13 @@ class ObservacionController extends Controller
                 $perPage = 15;
             }
 
-            $observaciones = Observacion::orderBy('id', 'desc')->paginate($perPage);
+            $query = Observacion::orderBy('id', 'desc');
+            $user = auth()->user();
+            if ($user->idrol != 1) {
+                $empresaId = $user->id_empresa ?? $user->id_company;
+                $query->where('id_empresa', $empresaId);
+            }
+            $observaciones = $query->paginate($perPage);
 
             return response()->json([
                 'success' => true,
@@ -72,6 +78,14 @@ class ObservacionController extends Controller
     public function show($id)
     {
         $observacion = Observacion::findOrFail($id);
+        $user = auth()->user();
+        $empresaId = $user->id_empresa ?? $user->id_company;
+        if ($user->idrol != 1 && $observacion->id_empresa != $empresaId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autorizado para ver esta observación'
+            ], 403);
+        }
         return new ObservacionResource($observacion);
     }
 

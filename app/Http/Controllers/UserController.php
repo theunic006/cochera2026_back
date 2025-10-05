@@ -18,12 +18,18 @@ class UserController extends Controller
     public function index(): JsonResponse
     {
         try {
+            
             $perPage = request()->query('per_page', 15);
             $allowed = [10, 15, 20, 30, 50, 100];
             if (!in_array((int)$perPage, $allowed)) {
                 $perPage = 15;
             }
-            $users = User::with(['role', 'company'])->orderBy('created_at', 'desc')->paginate($perPage);
+            $query = User::with(['role', 'company']);
+            $authUser = \Illuminate\Support\Facades\Auth::user();
+            if ($authUser->idrol != 1) {
+                $query->where('id_company', $authUser->id_company);
+            }
+            $users = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
             return response()->json([
                 'success' => true,
@@ -59,7 +65,7 @@ class UserController extends Controller
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
                 'idrol' => $validatedData['idrol'] ?? null,
-                'id_company' => $validatedData['id_company'] ?? null,
+                'id_company' => \Illuminate\Support\Facades\Auth::user()->id_company,
                 'estado' => $validatedData['estado'] ?? 'ACTIVO',
             ]);
 

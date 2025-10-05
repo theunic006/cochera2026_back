@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class UpdateTipoVehiculoRequest extends FormRequest
 {
@@ -21,11 +24,23 @@ class UpdateTipoVehiculoRequest extends FormRequest
      */
     public function rules(): array
     {
-        $tipoVehiculoId = $this->route()->parameter('tipo_vehiculo');
+        $tipoVehiculoId = $this->route('tipo_vehiculo');
+        $user = Auth::user();
+        $empresaId = $user->id_empresa ?? $user->id_company;
+
 
         return [
-            'nombre' => 'sometimes|required|string|max:50|unique:tipo_vehiculos,nombre,' . $tipoVehiculoId,
+            'id_empresa' => 'sometimes|exists:empresas,id',
             'valor' => 'sometimes|nullable|numeric|min:0',
+            'nombre' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('tipo_vehiculos', 'nombre')
+                    ->where('id_empresa', $empresaId)
+                    ->ignore($tipoVehiculoId),
+            ],
         ];
     }
 

@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class StoreTipoVehiculoRequest extends FormRequest
 {
@@ -21,10 +23,23 @@ class StoreTipoVehiculoRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'nombre' => 'required|string|max:50|unique:tipo_vehiculos,nombre',
+        $user = Auth::user();
+        $empresaId = $user->id_empresa ?? $user->id_company;
+
+        $rules = [
             'valor' => 'nullable|numeric|min:0',
-        ];
+            'nombre' => [
+                'required',
+                'string',
+                'max:100',
+                // Si es superusuario, no validar unicidad por empresa
+                $user && $user->idrol == 1
+                    ? Rule::unique('tipo_vehiculos', 'nombre')
+                    : Rule::unique('tipo_vehiculos', 'nombre')->where('id_empresa', $empresaId),
+            ],
+            ];
+
+            return $rules;
     }
 
     /**

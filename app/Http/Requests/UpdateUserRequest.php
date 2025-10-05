@@ -15,7 +15,8 @@ class UpdateUserRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+    $userId = $this->route('id'); // El parámetro de la ruta es 'id' según UserController@update
+    return [
             'name' => 'sometimes|required|string|max:255',
             'email' => [
                 'sometimes',
@@ -23,7 +24,7 @@ class UpdateUserRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($this->user ?? $this->id)
+                Rule::unique('users')->ignore($userId)
             ],
             'password' => 'sometimes|required|string|min:8|confirmed',
             'idrol' => 'sometimes|nullable|exists:roles,id',

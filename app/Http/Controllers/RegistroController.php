@@ -21,7 +21,12 @@ class RegistroController extends Controller
             if (!in_array((int)$perPage, $allowed)) {
                 $perPage = 15;
             }
-            $registros = Registro::orderBy('created_at', 'desc')->paginate($perPage);
+            $authUser = \Illuminate\Support\Facades\Auth::user();
+            $query = Registro::query();
+            if ($authUser->idrol != 1) {
+                $query->where('id_empresa', $authUser->id_company);
+            }
+            $registros = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
             return response()->json([
                 'success' => true,

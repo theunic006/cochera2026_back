@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class StoreToleranciaRequest extends FormRequest
 {
@@ -21,11 +23,23 @@ class StoreToleranciaRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'minutos' => 'required|integer|min:1|max:1440',
-            'descripcion' => 'required|string|max:100|unique:tolerancia,descripcion',
-        ];
+            $user = Auth::user();
+            $empresaId = $user->id_empresa ?? $user->id_company;
+            $rules = [
+                'minutos' => 'required|integer|min:1|max:1440',
+                'descripcion' => [
+                    'required',
+                    'string',
+                    'max:100',
+                    // Si es superusuario, no validar unicidad por empresa
+                    $user && $user->idrol == 1
+                        ? Rule::unique('tolerancia', 'descripcion')
+                        : Rule::unique('tolerancia', 'descripcion')->where('id_empresa', $empresaId),
+                ],
+            ];
+            return $rules;
     }
+
 
     /**
      * Mensajes de validación personalizados

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class StoreVehiculoRequest extends FormRequest
 {
@@ -21,8 +22,16 @@ class StoreVehiculoRequest extends FormRequest
      */
     public function rules(): array
     {
+    $idCompany = Auth::user() ? Auth::user()->id_company : null;
         return [
-            'placa' => 'required',
+            'placa' => [
+                'required',
+                'string',
+                'max:15',
+                \Illuminate\Validation\Rule::unique('vehiculos')->where(function ($query) use ($idCompany) {
+                    return $query->where('id_empresa', $idCompany);
+                })
+            ],
             'modelo' => 'nullable',
             'marca' => 'nullable',
             'color' => 'nullable',

@@ -23,6 +23,7 @@ class UpdateToleranciaRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'id_empresa' => 'sometimes|exists:empresas,id',
             'minutos' => [
                 'required',
                 'integer',

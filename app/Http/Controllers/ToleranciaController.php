@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateToleranciaRequest;
 use App\Http\Resources\ToleranciaResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class ToleranciaController extends Controller
 {
@@ -18,7 +19,13 @@ class ToleranciaController extends Controller
     public function index(Request $request)
     {
         try {
+            $authUser = Auth::user();
             $query = Tolerancia::query();
+            if ($authUser->idrol != 1) {
+                // Soportar ambos posibles nombres de campo en el usuario
+                $empresaId = $authUser->id_empresa ?? $authUser->id_company;
+                $query->where('id_empresa', $empresaId);
+            }
 
             // Filtrar por descripción
             if ($request->filled('descripcion')) {
@@ -68,7 +75,17 @@ class ToleranciaController extends Controller
     public function store(StoreToleranciaRequest $request)
     {
         try {
-            $tolerancia = Tolerancia::create($request->validated());
+            $data = $request->validated();
+            $authUser = Auth::user();
+            // Asignar id_empresa correctamente para superusuario y usuarios normales
+            if ($authUser->idrol == 1) {
+                // Superusuario: permite id_empresa del request, o del usuario si no viene
+                $data['id_empresa'] = $data['id_empresa'] ?? $authUser->id_empresa ?? $authUser->id_company;
+            } else {
+                // Usuario normal: siempre forzar su empresa
+                $data['id_empresa'] = $authUser->id_empresa ?? $authUser->id_company;
+            }
+            $tolerancia = Tolerancia::create($data);
 
             return response()->json([
                 'success' => true,
@@ -113,7 +130,15 @@ class ToleranciaController extends Controller
     public function update(UpdateToleranciaRequest $request, Tolerancia $tolerancia)
     {
         try {
-            $tolerancia->update($request->validated());
+            $data = $request->validated();
+            $authUser = Auth::user();
+            // Asignar id_empresa correctamente para superusuario y usuarios normales
+            if ($authUser->idrol == 1) {
+                $data['id_empresa'] = $data['id_empresa'] ?? $authUser->id_empresa ?? $authUser->id_company;
+            } else {
+                $data['id_empresa'] = $authUser->id_empresa ?? $authUser->id_company;
+            }
+            $tolerancia->update($data);
 
             return response()->json([
                 'success' => true,

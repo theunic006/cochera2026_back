@@ -16,6 +16,7 @@ class ToleranciaResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'id_empresa' => $this->id_empresa,
             'minutos' => $this->minutos,
             'descripcion' => $this->descripcion,
             'created_at' => $this->created_at,

@@ -16,6 +16,7 @@ class TipoVehiculoResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'id_empresa' => $this->id_empresa,
             'nombre' => $this->nombre,
             'nombre_formateado' => $this->nombre_formateado,
             'valor' => $this->valor,

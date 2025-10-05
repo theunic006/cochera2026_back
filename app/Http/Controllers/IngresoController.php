@@ -23,7 +23,12 @@ class IngresoController extends Controller
             $perPage = 15;
         }
         try {
-            $ingresos = Ingreso::with(['vehiculo.tipoVehiculo', 'observaciones'])->orderBy('created_at', 'desc')->paginate($perPage);
+            $authUser = \Illuminate\Support\Facades\Auth::user();
+            $query = Ingreso::with(['vehiculo.tipoVehiculo', 'observaciones']);
+            if ($authUser->idrol != 1) {
+                $query->where('id_empresa', $authUser->id_company);
+            }
+            $ingresos = $query->orderBy('created_at', 'desc')->paginate($perPage);
             return response()->json([
                 'success' => true,
                 'message' => 'Ingresos obtenidos exitosamente',

@@ -19,6 +19,10 @@ class VehiculoController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Vehiculo::with('tipoVehiculo');
+        $empresaId = \Illuminate\Support\Facades\Auth::user()->id_empresa ?? \Illuminate\Support\Facades\Auth::user()->id_company;
+        if (\Illuminate\Support\Facades\Auth::user()->idrol != 1) {
+            $query->where('id_empresa', $empresaId);
+        }
 
         // Filtros
         if ($request->has('search')) {
@@ -71,11 +75,14 @@ class VehiculoController extends Controller
         if (empty($data['tipo_vehiculo_id'])) {
             $data['tipo_vehiculo_id'] = 1;
         }
+        // Asignar id_empresa automáticamente según el usuario autenticado
+        $data['id_empresa'] = \Illuminate\Support\Facades\Auth::user()->id_company;
 
         DB::beginTransaction();
         try {
             // Buscar si la placa ya existe
-            $vehiculo = Vehiculo::where('placa', $data['placa'])->first();
+
+            $vehiculo = Vehiculo::where('placa', $data['placa'])->where('id_empresa', $data['id_empresa'])->first();
             $vehiculoCreated = false;
             $comentario = '';
             $ingreso = null;

@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateTipoVehiculoRequest;
 use App\Http\Resources\TipoVehiculoResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Auth;
 
 class TipoVehiculoController extends Controller
 {
@@ -23,8 +24,12 @@ class TipoVehiculoController extends Controller
             if (!in_array((int)$perPage, $allowed)) {
                 $perPage = 15;
             }
-            $tiposVehiculo = TipoVehiculo::orderBy('nombre', 'asc')
-                                       ->paginate($perPage);
+            $query = TipoVehiculo::orderBy('nombre', 'asc');
+            if (Auth::user()->idrol != 1) {
+                $empresaId = Auth::user()->id_empresa ?? Auth::user()->id_company;
+                $query->where('id_empresa', $empresaId);
+            }
+            $tiposVehiculo = $query->paginate($perPage);
 
             return response()->json([
                 'success' => true,
@@ -54,7 +59,10 @@ class TipoVehiculoController extends Controller
     public function store(StoreTipoVehiculoRequest $request): JsonResponse
     {
         try {
-            $tipoVehiculo = TipoVehiculo::create($request->validated());
+            $data = $request->validated();
+            $empresaId = Auth::user()->id_empresa ?? Auth::user()->id_company;
+            $data['id_empresa'] = $empresaId;
+            $tipoVehiculo = TipoVehiculo::create($data);
 
             return response()->json([
                 'success' => true,
@@ -77,7 +85,13 @@ class TipoVehiculoController extends Controller
     {
         try {
             $tipoVehiculo = TipoVehiculo::findOrFail($id);
-
+            $empresaId = Auth::user()->id_empresa ?? Auth::user()->id_company;
+            if (Auth::user()->idrol != 1 && $tipoVehiculo->id_empresa != $empresaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No autorizado para ver este tipo de vehículo'
+                ], 403);
+            }
             return response()->json([
                 'success' => true,
                 'message' => 'Tipo de vehículo encontrado',
@@ -104,7 +118,16 @@ class TipoVehiculoController extends Controller
     {
         try {
             $tipoVehiculo = TipoVehiculo::findOrFail($id);
-            $tipoVehiculo->update($request->validated());
+            $empresaId = Auth::user()->id_empresa ?? Auth::user()->id_company;
+            if (Auth::user()->idrol != 1 && $tipoVehiculo->id_empresa != $empresaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No autorizado para actualizar este tipo de vehículo'
+                ], 403);
+            }
+            $data = $request->validated();
+            $data['id_empresa'] = $empresaId;
+            $tipoVehiculo->update($data);
 
             return response()->json([
                 'success' => true,
@@ -132,6 +155,13 @@ class TipoVehiculoController extends Controller
     {
         try {
             $tipoVehiculo = TipoVehiculo::findOrFail($id);
+            $empresaId = Auth::user()->id_empresa ?? Auth::user()->id_company;
+            if (Auth::user()->idrol != 1 && $tipoVehiculo->id_empresa != $empresaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No autorizado para eliminar este tipo de vehículo'
+                ], 403);
+            }
             $nombre = $tipoVehiculo->nombre;
             $tipoVehiculo->delete();
 
@@ -160,23 +190,26 @@ class TipoVehiculoController extends Controller
     public function search(Request $request): JsonResponse
     {
         try {
-            $query = $request->get('query', '');
+            $queryStr = $request->get('query', '');
             $perPage = $request->get('per_page', 10);
 
-            if (empty($query)) {
+            if (empty($queryStr)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Parámetro de búsqueda requerido'
                 ], 400);
             }
 
-            $tiposVehiculo = TipoVehiculo::byNombre($query)
-                                        ->orderBy('nombre', 'asc')
-                                        ->paginate($perPage);
+            $query = TipoVehiculo::byNombre($queryStr)->orderBy('nombre', 'asc');
+            if (Auth::user()->idrol != 1) {
+                $empresaId = Auth::user()->id_empresa ?? Auth::user()->id_company;
+                $query->where('id_empresa', $empresaId);
+            }
+            $tiposVehiculo = $query->paginate($perPage);
 
             return response()->json([
                 'success' => true,
-                'message' => "Resultados de búsqueda para: {$query}",
+                'message' => "Resultados de búsqueda para: {$queryStr}",
                 'data' => TipoVehiculoResource::collection($tiposVehiculo->items()),
                 'pagination' => [
                     'current_page' => $tiposVehiculo->currentPage(),
@@ -204,9 +237,12 @@ class TipoVehiculoController extends Controller
         try {
             $perPage = $request->get('per_page', 10);
 
-            $tiposVehiculo = TipoVehiculo::conValor()
-                                        ->orderBy('valor', 'asc')
-                                        ->paginate($perPage);
+            $query = TipoVehiculo::conValor()->orderBy('valor', 'asc');
+            if (Auth::user()->idrol != 1) {
+                $empresaId = Auth::user()->id_empresa ?? Auth::user()->id_company;
+                $query->where('id_empresa', $empresaId);
+            }
+            $tiposVehiculo = $query->paginate($perPage);
 
             return response()->json([
                 'success' => true,
@@ -253,9 +289,12 @@ class TipoVehiculoController extends Controller
                 ], 400);
             }
 
-            $tiposVehiculo = TipoVehiculo::byRangoValor($min, $max)
-                                        ->orderBy('valor', 'asc')
-                                        ->paginate($perPage);
+            $query = TipoVehiculo::byRangoValor($min, $max)->orderBy('valor', 'asc');
+            if (Auth::user()->idrol != 1) {
+                $empresaId = Auth::user()->id_empresa ?? Auth::user()->id_company;
+                $query->where('id_empresa', $empresaId);
+            }
+            $tiposVehiculo = $query->paginate($perPage);
 
             $rangoMensaje = '';
             if ($min !== null && $max !== null) {

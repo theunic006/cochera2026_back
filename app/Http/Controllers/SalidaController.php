@@ -15,6 +15,11 @@ class SalidaController extends Controller
     public function search(Request $request): JsonResponse
     {
         $query = Salida::with(['registro', 'user', 'empresa']);
+        $user = auth()->user();
+        if ($user->idrol != 1) {
+            $empresaId = $user->id_empresa ?? $user->id_company;
+            $query->where('id_empresa', $empresaId);
+        }
 
         if ($request->filled('fecha')) {
             $query->where('fecha_salida', $request->input('fecha'));
@@ -52,11 +57,18 @@ class SalidaController extends Controller
     // Listar salidas
     public function index(): JsonResponse
     {
-        $salidas = Salida::with(['registro', 'user', 'empresa'])->orderByDesc('fecha_salida')->paginate(20);
-        return response()->json([
-            'success' => true,
-            'data' => SalidaResource::collection($salidas)
-        ]);
+
+          $query = Salida::with(['registro', 'user', 'empresa']);
+    $user = auth()->user();
+    if ($user->idrol != 1) {
+        $empresaId = $user->id_empresa ?? $user->id_company;
+        $query->where('id_empresa', $empresaId);
+    }
+    $salidas = $query->orderByDesc('fecha_salida')->paginate(20);
+    return response()->json([
+        'success' => true,
+        'data' => SalidaResource::collection($salidas)
+    ]);
     }
 
     // Crear salida

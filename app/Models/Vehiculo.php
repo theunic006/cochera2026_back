@@ -32,6 +32,7 @@ class Vehiculo extends Model
         'anio',
         'tipo_vehiculo_id',
         'frecuencia',
+        'id_empresa',
     ];
 
     /**

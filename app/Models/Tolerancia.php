@@ -18,6 +18,7 @@ class Tolerancia extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
+        'id_empresa',
         'minutos',
         'descripcion',
     ];

@@ -144,8 +144,15 @@ class RoleController extends Controller
     {
         try {
             $role = Role::findOrFail($id);
+            // Verificar si existen usuarios asociados a este rol
+            $tieneUsuarios = $role->users()->exists();
+            if ($tieneUsuarios) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede eliminar: existen usuarios asociados a este rol.'
+                ], 409);
+            }
             $role->delete();
-
             return response()->json([
                 'success' => true,
                 'message' => 'Role eliminado exitosamente'

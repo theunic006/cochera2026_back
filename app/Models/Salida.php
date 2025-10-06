@@ -8,6 +8,8 @@ class Salida extends Model
 {
     protected $table = 'salidas';
     protected $fillable = [
+        'placa',
+        'user',
         'fecha_salida',
         'hora_salida',
         'tiempo',

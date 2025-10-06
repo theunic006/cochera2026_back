@@ -194,20 +194,18 @@ class VehiculoController extends Controller
      */
     public function destroy(Vehiculo $vehiculo): JsonResponse
     {
+        // Verificar si existen ingresos asociados a este vehículo
+        $tieneIngresos = \App\Models\Ingreso::where('id_vehiculo', $vehiculo->id)->exists();
+        if ($tieneIngresos) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar: existen ingresos asociados a este vehículo.'
+            ], 409);
+        }
         $vehiculo->delete();
-
         return response()->json([
             'success' => true,
             'message' => 'Vehículo eliminado exitosamente'
         ]);
-
-        /*
-            $registro = \App\Models\Registro::create([
-                'id_vehiculo' => $vehiculo->id,
-                'id_user' => $userId,
-                'id_empresa' => $empresaId,
-                'fecha' => now(),
-            ]);
-*/
     }
 }

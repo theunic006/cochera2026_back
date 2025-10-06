@@ -18,7 +18,7 @@ class UserController extends Controller
     public function index(): JsonResponse
     {
         try {
-            
+
             $perPage = request()->query('per_page', 15);
             $allowed = [10, 15, 20, 30, 50, 100];
             if (!in_array((int)$perPage, $allowed)) {
@@ -193,6 +193,15 @@ class UserController extends Controller
                     'success' => false,
                     'message' => 'Usuario no encontrado'
                 ], 404);
+            }
+
+            // Verificar si existen ingresos asociados a este usuario
+            $tieneIngresos = \App\Models\Ingreso::where('id_user', $user->id)->exists();
+            if ($tieneIngresos) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede eliminar: existen ingresos asociados a este usuario.'
+                ], 409);
             }
 
             $user->delete();

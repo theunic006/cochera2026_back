@@ -10,9 +10,12 @@ return new class extends Migration
     {
         Schema::create('tipo_vehiculos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre', 50)->comment('Nombre del tipo de vehículo');
-            $table->double('valor')->nullable()->comment('Valor asociado al tipo de vehículo');
+            $table->string('nombre', 50);
+            $table->double('valor')->nullable();
+            $table->unsignedBigInteger('id_empresa');
             $table->timestamps();
+
+            $table->foreign('id_empresa')->references('id')->on('companies')->onDelete('cascade');
         });
     }
 

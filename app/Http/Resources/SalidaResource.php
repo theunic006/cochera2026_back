@@ -11,6 +11,8 @@ class SalidaResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'placa' => $this->placa,
+            'user' => $this->user,
             'fecha_salida' => $this->fecha_salida,
             'hora_salida' => $this->hora_salida,
             'tiempo' => $this->tiempo,

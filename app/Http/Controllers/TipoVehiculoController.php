@@ -162,9 +162,16 @@ class TipoVehiculoController extends Controller
                     'message' => 'No autorizado para eliminar este tipo de vehículo'
                 ], 403);
             }
+            // Verificar si existen vehículos asociados a este tipo
+            $vehiculosAsociados = $tipoVehiculo->vehiculos()->exists();
+            if ($vehiculosAsociados) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede eliminar: existen vehículos asociados a este tipo.'
+                ], 409);
+            }
             $nombre = $tipoVehiculo->nombre;
             $tipoVehiculo->delete();
-
             return response()->json([
                 'success' => true,
                 'message' => "Tipo de vehículo '{$nombre}' eliminado exitosamente",

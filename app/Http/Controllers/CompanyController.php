@@ -180,8 +180,15 @@ class CompanyController extends Controller
     {
         try {
             $company = Company::findOrFail($id);
+            // Verificar si existen ingresos asociados a esta empresa
+            $tieneIngresos = \App\Models\Ingreso::where('id_empresa', $company->id)->exists();
+            if ($tieneIngresos) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede eliminar: existen ingresos asociados a esta empresa.'
+                ], 409);
+            }
             $company->delete();
-
             return response()->json([
                 'success' => true,
                 'message' => 'Company eliminada exitosamente'

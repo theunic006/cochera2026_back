@@ -17,9 +17,9 @@ return new class extends Migration
             $table->unsignedBigInteger('id_vehiculo')->nullable();
             $table->timestamps();
 
-            $table->index('id_user');
-            $table->index('id_empresa');
-            $table->index('id_vehiculo');
+            $table->foreign('id_user')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('id_empresa')->references('id')->on('companies')->onDelete('set null');
+            $table->foreign('id_vehiculo')->references('id')->on('vehiculos')->onDelete('set null');
         });
     }
 

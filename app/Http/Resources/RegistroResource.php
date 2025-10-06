@@ -13,6 +13,8 @@ class RegistroResource extends JsonResource
             'fecha_ingreso' => $this->fecha_ingreso,
             'hora_ingreso' => $this->hora_ingreso,
             'id_vehiculo' => $this->id_vehiculo,
+            'placa' => $this->placa,
+            'user' => $this->user,
             'id_user' => $this->id_user,
             'id_empresa' => $this->id_empresa,
             'fecha' => $this->fecha,

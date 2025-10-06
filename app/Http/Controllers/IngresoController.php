@@ -189,10 +189,14 @@ class IngresoController extends Controller
             }
 
             // Guardar registro antes de eliminar, incluyendo fecha/hora ingreso
+            $placa = $ingreso->vehiculo ? $ingreso->vehiculo->placa : null;
+            $usuario = $ingreso->user ? $ingreso->user->name : null;
             $registro = \App\Models\Registro::create([
                 'id_vehiculo' => $ingreso->id_vehiculo,
                 'id_user' => $ingreso->id_user,
                 'id_empresa' => $ingreso->id_empresa,
+                'placa' => $placa,
+                'user' => $usuario,
                 'fecha' => now(),
                 'fecha_ingreso' => $ingreso->fecha_ingreso,
                 'hora_ingreso' => $ingreso->hora_ingreso,
@@ -218,6 +222,8 @@ class IngresoController extends Controller
 
             // Guardar salida
             $salidaModel = \App\Models\Salida::create([
+                'placa' => $placa,
+                'user' => $usuario,
                 'fecha_salida' => $fechaSalida,
                 'hora_salida' => $horaSalida,
                 'tiempo' => $tiempoSalida,

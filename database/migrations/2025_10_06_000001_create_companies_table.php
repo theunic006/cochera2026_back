@@ -15,6 +15,7 @@ return new class extends Migration
             $table->text('logo')->nullable();
             $table->text('descripcion')->nullable();
             $table->enum('estado', ['activo', 'suspendido', 'inactivo', 'pendiente'])->default('activo')->comment('Estado de la company: activo, suspendido, inactivo, pendiente');
+            $table->integer('capacidad')->nullable();
             $table->timestamps();
         });
     }

@@ -13,6 +13,8 @@ class Registro extends Model
         'id_vehiculo',
         'id_user',
         'id_empresa',
+        'placa',
+        'user',
         'fecha',
         'fecha_ingreso',
         'hora_ingreso',

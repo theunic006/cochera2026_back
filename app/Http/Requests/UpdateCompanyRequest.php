@@ -29,6 +29,8 @@ class UpdateCompanyRequest extends FormRequest
             'capacidad' => ['nullable', 'integer', 'min:0'],
             'descripcion' => ['nullable', 'string'],
             'estado' => ['nullable', 'in:' . implode(',', Company::getEstadosDisponibles())],
+            'imp_input' => ['nullable', 'string', 'max:255'],
+            'imp_output' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -48,6 +50,10 @@ class UpdateCompanyRequest extends FormRequest
             'capacidad.min' => 'La capacidad no puede ser negativa.',
             'descripcion.string' => 'La descripción debe ser una cadena de texto.',
             'estado.in' => 'El estado debe ser uno de los valores permitidos: ' . implode(', ', Company::getEstadosDisponibles()) . '.',
+            'imp_input.string' => 'La impresora de entrada debe ser una cadena de texto.',
+            'imp_input.max' => 'El nombre de la impresora de entrada no puede tener más de 255 caracteres.',
+            'imp_output.string' => 'La impresora de salida debe ser una cadena de texto.',
+            'imp_output.max' => 'El nombre de la impresora de salida no puede tener más de 255 caracteres.',
         ];
     }
 }

@@ -27,6 +27,13 @@ class UserResource extends JsonResource
                     'id' => $this->company->id,
                     'nombre' => $this->company->nombre,
                     'ubicacion' => $this->company->ubicacion,
+                    'logo' => $this->company->logo,
+                    'descripcion' => $this->company->descripcion,
+                    'estado' => $this->company->estado,
+                    'capacidad' => $this->company->capacidad,
+                    'imp_input' => $this->company->imp_input,
+                    'imp_output' => $this->company->imp_output,
+
                 ];
             }),
             'email_verified_at' => $this->email_verified_at,

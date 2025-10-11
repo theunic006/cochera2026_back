@@ -22,10 +22,18 @@ class CompanyResource extends JsonResource
             'capacidad' => $this->capacidad,
             'descripcion' => $this->descripcion,
             'estado' => $this->estado,
+            'imp_input' => $this->imp_input,
+            'imp_output' => $this->imp_output,
             'estado_info' => [
                 'label' => ucfirst($this->estado),
                 'is_active' => $this->isActive(),
                 'is_suspended' => $this->isSuspended(),
+            ],
+            'printer_info' => [
+                'input_printer' => $this->imp_input ?? 'No configurada',
+                'output_printer' => $this->imp_output ?? 'No configurada',
+                'has_input_printer' => !empty($this->imp_input),
+                'has_output_printer' => !empty($this->imp_output),
             ],
             'users_count' => $this->users_count ?? 0,
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,

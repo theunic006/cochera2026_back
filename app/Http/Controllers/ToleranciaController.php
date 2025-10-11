@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
+
 class ToleranciaController extends Controller
 {
     /**
@@ -65,6 +66,42 @@ class ToleranciaController extends Controller
                 'message' => 'Error al obtener las tolerancias',
                 'error' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Buscar tolerancias por id_empresa
+     * GET /api/tolerancias/by-empresa?id_empresa=valor&per_page=15
+     */
+    public function byEmpresa(Request $request)
+    {
+        try {
+            $idEmpresa = $request->input('id_empresa');
+            if (empty($idEmpresa)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Debe proporcionar el parámetro id_empresa'
+                ], 400);
+            }
+            $query = Tolerancia::where('id_empresa', $idEmpresa);
+            $perPage = $request->input('per_page', 15);
+            $tolerancias = $query->orderBy('minutos')->paginate($perPage);
+            return response()->json([
+                'success' => true,
+                'data' => ToleranciaResource::collection($tolerancias->items()),
+                'pagination' => [
+                    'current_page' => $tolerancias->currentPage(),
+                    'last_page' => $tolerancias->lastPage(),
+                    'per_page' => $tolerancias->perPage(),
+                    'total' => $tolerancias->total(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error en la búsqueda por empresa',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -177,4 +214,42 @@ class ToleranciaController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $authUser = Auth::user();
+            $query = Tolerancia::query();
+            if ($authUser->idrol != 1) {
+                $empresaId = $authUser->id_empresa ?? $authUser->id_company;
+                $query->where('id_empresa', $empresaId);
+            }
+            $q = $request->input('q');
+            if (!empty($q)) {
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('descripcion', 'like', "%$q%")
+                        ->orWhere('minutos', 'like', "%$q%");
+                });
+            }
+            $perPage = $request->input('per_page', 15);
+            $tolerancias = $query->orderBy('minutos')->paginate($perPage);
+            return response()->json([
+                'success' => true,
+                'data' => ToleranciaResource::collection($tolerancias->items()),
+                'pagination' => [
+                    'current_page' => $tolerancias->currentPage(),
+                    'last_page' => $tolerancias->lastPage(),
+                    'per_page' => $tolerancias->perPage(),
+                    'total' => $tolerancias->total(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error en la búsqueda de tolerancias',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
+

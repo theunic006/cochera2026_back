@@ -32,6 +32,8 @@ class Company extends Model
         'capacidad',
         'descripcion',
         'estado',
+        'imp_input',
+        'imp_output',
     ];
 
     /**

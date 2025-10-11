@@ -16,6 +16,7 @@ use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\IngresoController;
 use App\Http\Controllers\SalidaController;
 use App\Http\Controllers\ObservacionController;
+use App\Http\Controllers\PrinterController;
 
 // ================================
 // RUTAS PÚBLICAS (No requieren autenticación)
@@ -183,11 +184,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // CRUD DE TOLERANCIAS (Solo usuarios autenticados)
     // ================================
     Route::prefix('tolerancias')->name('tolerancias.')->group(function () {
+        Route::get('/by-empresa', [ToleranciaController::class, 'byEmpresa']); // GET /api/tolerancias/by-empresa?id_empresa=valor - Buscar por empresa
         Route::get('/', [ToleranciaController::class, 'index']);              // GET /api/tolerancias - Listar tolerancias
         Route::post('/', [ToleranciaController::class, 'store']);             // POST /api/tolerancias - Crear tolerancia
         Route::get('/{tolerancia}', [ToleranciaController::class, 'show']);    // GET /api/tolerancias/{id} - Mostrar tolerancia
         Route::put('/{tolerancia}', [ToleranciaController::class, 'update']);  // PUT /api/tolerancias/{id} - Actualizar tolerancia
         Route::delete('/{tolerancia}', [ToleranciaController::class, 'destroy']); // DELETE /api/tolerancias/{id} - Eliminar tolerancia
+        Route::get('/search', [ToleranciaController::class, 'search']); // GET /api/tolerancias/search?q=termino - Buscar tolerancias
+
     });
 
     // ================================
@@ -211,6 +215,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{ingreso}', [IngresoController::class, 'show']);     // GET /api/ingresos/{id} - Mostrar ingreso
         Route::put('/{ingreso}', [IngresoController::class, 'update']);   // PUT /api/ingresos/{id} - Actualizar ingreso
         Route::delete('/{ingreso}', [IngresoController::class, 'destroy']); // DELETE /api/ingresos/{id} - Eliminar ingreso
+        Route::get('/{ingreso}/print', [IngresoController::class, 'printIngreso']); // GET /api/ingresos/{id}/print - Imprimir ingreso
     });
 
     // ================================
@@ -233,6 +238,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{observacion}', [ObservacionController::class, 'show']);     // GET /api/observaciones/{id} - Mostrar observación
         Route::put('/{observacion}', [ObservacionController::class, 'update']);   // PUT /api/observaciones/{id} - Actualizar observación
         Route::delete('/{observacion}', [ObservacionController::class, 'destroy']); // DELETE /api/observaciones/{id} - Eliminar observación
+    });
+
+    // ================================
+    // CRUD DE IMPRESORAS (Solo usuarios autenticados)
+    // ================================
+    Route::prefix('printers')->group(function () {
+        Route::get('/', [PrinterController::class, 'index']);                    // GET /api/printers - Listar impresoras
+        Route::get('/{printerName}', [PrinterController::class, 'show']);        // GET /api/printers/{nombre} - Mostrar impresora específica
+        Route::post('/{printerName}/test', [PrinterController::class, 'test']);  // POST /api/printers/{nombre}/test - Probar impresora
     });
 });
 // ================================

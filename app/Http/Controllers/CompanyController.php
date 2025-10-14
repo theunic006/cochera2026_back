@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CompanyController extends Controller
 {
@@ -67,10 +68,39 @@ class CompanyController extends Controller
             $companiesPath = storage_path('app/public/companies');
             if (!file_exists($companiesPath)) {
                 mkdir($companiesPath, 0775, true);
+                Log::info("Carpeta companies creada: " . $companiesPath);
             }
+
             if ($request->hasFile('logo')) {
-                $path = $request->file('logo')->store('companies', 'public');
-                $data['logo'] = basename($path);
+                $file = $request->file('logo');
+                Log::info("Archivo recibido: " . $file->getClientOriginalName() . " Tamaño: " . $file->getSize() . " bytes");
+
+                if ($file->isValid()) {
+                    try {
+                        // Verificar permisos antes de guardar
+                        if (!is_writable($companiesPath)) {
+                            Log::error("La carpeta no es escribible: " . $companiesPath);
+                            throw new \Exception("La carpeta de destino no es escribible");
+                        }
+
+                        $path = $file->store('companies', 'public');
+                        $fullPath = storage_path('app/public/' . $path);
+
+                        if (file_exists($fullPath)) {
+                            $data['logo'] = $path;
+                            Log::info("Archivo guardado exitosamente: " . $fullPath);
+                        } else {
+                            Log::error("El archivo no se guardó correctamente: " . $fullPath);
+                            throw new \Exception("Error al guardar el archivo");
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Error al procesar logo: " . $e->getMessage());
+                        throw new \Exception("Error al subir el logo: " . $e->getMessage());
+                    }
+                } else {
+                    Log::error("Archivo inválido: " . $file->getErrorMessage());
+                    throw new \Exception("El archivo subido es inválido");
+                }
             }
 
 
@@ -162,10 +192,45 @@ class CompanyController extends Controller
             $companiesPath = storage_path('app/public/companies');
             if (!file_exists($companiesPath)) {
                 mkdir($companiesPath, 0775, true);
+                Log::info("Carpeta companies creada: " . $companiesPath);
             }
+
             if ($request->hasFile('logo')) {
-                $path = $request->file('logo')->store('companies', 'public');
-                $data['logo'] = basename($path);
+                $file = $request->file('logo');
+                Log::info("Archivo recibido para actualización: " . $file->getClientOriginalName() . " Tamaño: " . $file->getSize() . " bytes");
+
+                if ($file->isValid()) {
+                    try {
+                        // Verificar permisos antes de guardar
+                        if (!is_writable($companiesPath)) {
+                            Log::error("La carpeta no es escribible: " . $companiesPath);
+                            throw new \Exception("La carpeta de destino no es escribible");
+                        }
+
+                        // Eliminar imagen anterior si existe
+                        if ($company->logo && file_exists(storage_path('app/public/' . $company->logo))) {
+                            unlink(storage_path('app/public/' . $company->logo));
+                            Log::info("Imagen anterior eliminada: " . $company->logo);
+                        }
+
+                        $path = $file->store('companies', 'public');
+                        $fullPath = storage_path('app/public/' . $path);
+
+                        if (file_exists($fullPath)) {
+                            $data['logo'] = $path;
+                            Log::info("Archivo actualizado exitosamente: " . $fullPath);
+                        } else {
+                            Log::error("El archivo no se guardó correctamente: " . $fullPath);
+                            throw new \Exception("Error al guardar el archivo");
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Error al procesar logo en actualización: " . $e->getMessage());
+                        throw new \Exception("Error al actualizar el logo: " . $e->getMessage());
+                    }
+                } else {
+                    Log::error("Archivo inválido en actualización: " . $file->getErrorMessage());
+                    throw new \Exception("El archivo subido es inválido");
+                }
             }
 
             $company->update($data);

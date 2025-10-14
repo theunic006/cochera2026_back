@@ -56,20 +56,32 @@ class CompanyController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCompanyRequest $request): JsonResponse
+    public function store(Request $request): JsonResponse
     {
         try {
             DB::beginTransaction();
 
-            $data = $request->validated();
+            $data = $request->all();
 
             // Manejo de imagen/logo
+            $companiesPath = storage_path('app/public/companies');
+            if (!file_exists($companiesPath)) {
+                mkdir($companiesPath, 0775, true);
+            }
             if ($request->hasFile('logo')) {
                 $path = $request->file('logo')->store('companies', 'public');
-                $data['logo'] = $path;
+                $data['logo'] = basename($path);
             }
 
+
             $company = Company::create($data);
+
+            // Crear registro en tipo_vehiculos con nombre 'nuevo', valor '3' y el id_empresa de la empresa recién creada
+            $tipoVehiculoCreado = \App\Models\TipoVehiculo::create([
+                'nombre' => 'Nuevo',
+                'valor' => 3,
+                'id_empresa' => $company->id
+            ]);
 
             $password = '12345678';
             $adminUser = User::create([
@@ -147,9 +159,13 @@ class CompanyController extends Controller
             $data = $request->validated();
 
             // Manejo de imagen/logo
+            $companiesPath = storage_path('app/public/companies');
+            if (!file_exists($companiesPath)) {
+                mkdir($companiesPath, 0775, true);
+            }
             if ($request->hasFile('logo')) {
                 $path = $request->file('logo')->store('companies', 'public');
-                $data['logo'] = $path;
+                $data['logo'] = basename($path);
             }
 
             $company->update($data);

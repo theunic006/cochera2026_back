@@ -11,77 +11,55 @@ use Picqer\Barcode\BarcodeGeneratorPNG;
 use Mike42\Escpos\EscposImage;
 
 
-class IngresoController extends Controller
-{
+class IngresoController extends Controller{
     /**
      * Imprimir ticket de ingreso en impresora térmica
      */
-    public function printIngreso($id)
+
+
+    /**
+     * Imprimir ticket de ingreso en impresora térmica
+     */
+    public function index(): JsonResponse
     {
+        $perPage = request()->query('per_page', 15);
+        $allowed = [10, 15, 20, 30, 50, 100];
+        if (!in_array((int)$perPage, $allowed)) {
+            $perPage = 15;
+        }
         try {
-            $ingreso = \App\Models\Ingreso::with(['vehiculo.tipoVehiculo'])->find($id);
-            if (!$ingreso) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ingreso no encontrado'
-                ], 404);
+            $authUser = \Illuminate\Support\Facades\Auth::user();
+            $query = Ingreso::with(['vehiculo.tipoVehiculo', 'observaciones']);
+            if ($authUser->idrol != 1) {
+                $query->where('id_empresa', $authUser->id_company);
             }
-
-            // Requiere mike42/escpos-php instalado
-            // composer require mike42/escpos-php
-            try {
-                $connector = new \Mike42\Escpos\PrintConnectors\WindowsPrintConnector("T20"); // Cambia T20 por el nombre de tu impresora
-                $printer = new \Mike42\Escpos\Printer($connector);
-
-                $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_CENTER);
-                $printer->text("COCHERA 2026\n");
-                $printer->text("-----------------------------\n");
-                $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_LEFT);
-                $printer->text("Placa: " . ($ingreso->vehiculo->placa ?? '-') . "\n");
-                $printer->text("Fecha Ingreso: " . ($ingreso->fecha_ingreso ?? '-') . "\n");
-                $printer->text("Hora Ingreso: " . ($ingreso->hora_ingreso ?? '-') . "\n");
-                $printer->text("Tipo Vehiculo: " . ($ingreso->vehiculo->tipoVehiculo->nombre ?? '-') . "\n");
-                $valor = $ingreso->vehiculo->tipoVehiculo->valor ?? '-';
-                $printer->text("Valor hora Fraccion: S/. " . (is_numeric($valor) ? number_format($valor, 2) : $valor) . "\n");
-                $printer->text("-----------------------------\n");
-                // Imprimir código de barras de la placa
-                // Imprimir código de barras de la placa usando el método nativo
-                $placa = $ingreso->vehiculo->placa ?? null;
-                if ($placa) {
-                    $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_CENTER);
-                    $printer->text("\n");
-                    $printer->setBarcodeHeight(60); // altura aprox. 1cm
-                    $printer->setBarcodeWidth(3);   // ancho estándar
-                    $printer->barcode($placa, \Mike42\Escpos\Printer::BARCODE_CODE39);
-                    $printer->feed();
-                } else {
-                    $printer->text("[No se pudo imprimir el código de barras]\n");
-                }
-                $printer->text("¡Gracias por su visita!\n");
-                $printer->feed(2);
-                $printer->cut();
-                $printer->close();
-            } catch (\Exception $e) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error al imprimir',
-                    'error' => $e->getMessage()
-                ], 500);
+            // Filtro por placa
+            $search = request()->query('search');
+            if (!empty($search)) {
+                $query->whereHas('vehiculo', function($q) use ($search) {
+                    $q->where('placa', 'LIKE', $search . '%');
+                });
             }
-
+            $ingresos = $query->orderBy('created_at', 'desc')->paginate($perPage);
             return response()->json([
                 'success' => true,
-                'message' => 'Ticket impreso correctamente'
+                'message' => 'Ingresos obtenidos exitosamente',
+                'data' => IngresoResource::collection($ingresos),
+                'pagination' => [
+                    'current_page' => $ingresos->currentPage(),
+                    'last_page' => $ingresos->lastPage(),
+                    'per_page' => $ingresos->perPage(),
+                    'total' => $ingresos->total(),
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al imprimir ingreso',
+                'message' => 'Error al obtener ingresos',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
-
         /**
      * Registrar un nuevo ingreso
      */
@@ -290,6 +268,7 @@ class IngresoController extends Controller
     {
         try {
             $search = $request->query('q');
+            $perPage = $request->query('per_page', 15); // Valor por defecto 15
             if (!$search) {
                 return response()->json([
                     'success' => false,
@@ -298,7 +277,7 @@ class IngresoController extends Controller
             }
             $ingresos = Ingreso::where('fecha_ingreso', 'LIKE', "%{$search}%")
                         ->orderBy('created_at', 'desc')
-                        ->paginate(15);
+                        ->paginate($perPage);
             return response()->json([
                 'success' => true,
                 'message' => 'Búsqueda completada exitosamente',
@@ -318,4 +297,73 @@ class IngresoController extends Controller
             ], 500);
         }
     }
+
+    public function printIngreso($id): \Illuminate\Http\JsonResponse
+    {
+        $ingreso = \App\Models\Ingreso::with(['vehiculo.tipoVehiculo'])->find($id);
+        if (!$ingreso) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ingreso no encontrado'
+            ], 404);
+        }
+        // Obtener la empresa asociada al usuario autenticado
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!$user || !$user->company) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la empresa asociada al usuario.'
+            ], 400);
+        }
+        $printerName = $user->company->imp_input ?? null;
+        if (empty($printerName)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No existe Impresora, Configuralo en el Perfil de usuario.'
+            ], 400);
+        }
+        try {
+            $connector = new \Mike42\Escpos\PrintConnectors\WindowsPrintConnector($printerName);
+            $printer = new \Mike42\Escpos\Printer($connector);
+
+            $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_CENTER);
+            $printer->text("COCHERA 2026\n");
+            $printer->text("-----------------------------\n");
+            $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_LEFT);
+            $printer->text("Placa: " . ($ingreso->vehiculo->placa ?? '-') . "\n");
+            $printer->text("Fecha Ingreso: " . ($ingreso->fecha_ingreso ?? '-') . "\n");
+            $printer->text("Hora Ingreso: " . ($ingreso->hora_ingreso ?? '-') . "\n");
+            $printer->text("Tipo Vehiculo: " . ($ingreso->vehiculo->tipoVehiculo->nombre ?? '-') . "\n");
+            $valor = $ingreso->vehiculo->tipoVehiculo->valor ?? '-';
+            $printer->text("Valor hora Fraccion: S/. " . (is_numeric($valor) ? number_format($valor, 2) : $valor) . "\n");
+            $printer->text("-----------------------------\n");
+            // Imprimir código de barras de la placa usando el método nativo
+            $placa = $ingreso->vehiculo->placa ?? null;
+            if ($placa) {
+                $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_CENTER);
+                $printer->text("\n");
+                $printer->setBarcodeHeight(60); // altura aprox. 1cm
+                $printer->setBarcodeWidth(3);   // ancho estándar
+                $printer->barcode($placa, \Mike42\Escpos\Printer::BARCODE_CODE39);
+                $printer->feed();
+            } else {
+                $printer->text("[No se pudo imprimir el código de barras]\n");
+            }
+            $printer->text("¡Gracias por su visita!\n");
+            $printer->feed(2);
+            $printer->cut();
+            $printer->close();
+            return response()->json([
+                'success' => true,
+                'message' => 'Ticket impreso correctamente'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo conectar o imprimir en la impresora: ' . $printerName,
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
+
 }

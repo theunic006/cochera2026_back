@@ -101,17 +101,16 @@ class VehiculoController extends Controller
 
             // Verificar si ya existe ingreso para el vehículo
             $existeIngreso = \App\Models\Ingreso::where('id_vehiculo', $vehiculo->id)->exists();
-            if ($existeIngreso) {
-                $comentario = 'Ya existe ingreso: NO se guardó nada.';
-                DB::commit();
-                return response()->json([
-                    'success' => true,
-                    'message' => 'No se guardó nada porque ya existe ingreso para este vehículo.',
-                    'comentario' => $comentario,
-                    'vehiculo' => new VehiculoResource($vehiculo),
-                    'ingreso' => null,
-                    'registro' => null
-                ], 200);
+                if ($existeIngreso) {
+                    $mensaje = 'Ya existe La placa.';
+                    DB::commit();
+                    return response()->json([
+                        'success' => true,
+                        'message' => $mensaje,
+                        'vehiculo' => new VehiculoResource($vehiculo),
+                        'ingreso' => null,
+                        'registro' => null
+                    ], 200);
             }
 
             // Si no existe ingreso, guardar ingreso y registro
@@ -129,16 +128,12 @@ class VehiculoController extends Controller
             // Si tienes lógica para registro, descomenta y ajusta aquí
             // $registro = ...
 
-            $comentario = $vehiculoCreated
-                ? 'No existe placa: se guardó en vehiculos, ingresos y registros.'
-                : 'Existe placa: se guardó en ingresos y registros.';
-
             DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => $vehiculoCreated
                     ? 'Vehículo, ingreso y registro creados exitosamente'
-                    : 'Ingreso y registro creados exitosamente (vehículo ya existe)',
+                    : 'Placa Registada',
                 'comentario' => $comentario,
                 'vehiculo' => new VehiculoResource($vehiculo),
                 'ingreso' => $ingreso,

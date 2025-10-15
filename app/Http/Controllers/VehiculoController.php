@@ -67,7 +67,7 @@ class VehiculoController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * INGRESAR NUEVO VEHÍCULO AL SISTEMA
      */
     public function store(StoreVehiculoRequest $request): JsonResponse
     {

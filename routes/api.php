@@ -28,6 +28,9 @@ Route::prefix('suscribers')->group(function () {
     Route::post('/', [SuscriberController::class, 'store']);         // POST /api/suscribers - Crear suscriptor
 });
 
+// Ruta pública para registrar empresa sin autenticación
+Route::post('/companies/register', [CompanyController::class, 'publicRegister']);   // POST /api/companies/register - Registro público de empresa
+
 // Ruta pública para registrar usuario sin autenticación
 //Route::post('/public-register', [\App\Http\Controllers\AuthController::class, 'register']);
 
@@ -38,6 +41,7 @@ Route::prefix('auth')->group(function () {
     // ⚠️ IMPORTANTE: Solo login es público
     // Para registrar nuevos usuarios, primero debes estar autenticado
     Route::post('/login', [AuthController::class, 'login']);          // POST /api/auth/login
+        // POST /api/companies - Crear company
 });
 
 // ================================

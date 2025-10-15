@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
+use App\Services\RecaptchaService;
 use App\Http\Resources\CompanyResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -153,6 +154,122 @@ class CompanyController extends Controller
     }
 
     /**
+     * Public registration endpoint for companies without authentication
+     */
+    public function publicRegister(Request $request): JsonResponse
+    {
+        try {
+            // Validar datos de entrada
+            $request->validate([
+                'nombre' => 'required|string|max:255|unique:companies,nombre',
+                'ubicacion' => 'required|string|max:255',
+                'descripcion' => 'nullable|string|max:1000',
+                'capacidad' => 'required|integer|min:1',
+                'estado' => 'nullable|in:activo,inactivo,suspendido,pendiente',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            ]);
+
+            DB::beginTransaction();
+
+            $data = $request->all();
+            $data['estado'] = $data['estado'] ?? 'pendiente'; // Por defecto pendiente para revisión
+
+            // Manejo de imagen/logo
+            $companiesPath = storage_path('app/public/companies');
+            if (!file_exists($companiesPath)) {
+                mkdir($companiesPath, 0775, true);
+                Log::info("Carpeta companies creada: " . $companiesPath);
+            }
+
+            if ($request->hasFile('logo')) {
+                $file = $request->file('logo');
+                Log::info("Archivo recibido en registro público: " . $file->getClientOriginalName() . " Tamaño: " . $file->getSize() . " bytes");
+
+                if ($file->isValid()) {
+                    try {
+                        // Verificar permisos antes de guardar
+                        if (!is_writable($companiesPath)) {
+                            Log::error("La carpeta no es escribible: " . $companiesPath);
+                            throw new \Exception("La carpeta de destino no es escribible");
+                        }
+
+                        $path = $file->store('companies', 'public');
+                        $fullPath = storage_path('app/public/' . $path);
+
+                        if (file_exists($fullPath)) {
+                            $data['logo'] = $path;
+                            Log::info("Archivo guardado exitosamente en registro público: " . $fullPath);
+                        } else {
+                            Log::error("El archivo no se guardó correctamente: " . $fullPath);
+                            throw new \Exception("Error al guardar el archivo");
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Error al procesar logo en registro público: " . $e->getMessage());
+                        throw new \Exception("Error al subir el logo: " . $e->getMessage());
+                    }
+                } else {
+                    Log::error("Archivo inválido en registro público: " . $file->getErrorMessage());
+                    throw new \Exception("El archivo subido es inválido");
+                }
+            }
+
+            $company = Company::create($data);
+
+            // Crear registro en tipo_vehiculos con nombre 'Nuevo', valor '3' y el id_empresa de la empresa recién creada
+            $tipoVehiculoCreado = \App\Models\TipoVehiculo::create([
+                'nombre' => 'Nuevo',
+                'valor' => 3,
+                'id_empresa' => $company->id
+            ]);
+
+            $password = '12345678';
+            $adminUser = User::create([
+                'name' => 'Admin ' . $company->nombre,
+                'email' => 'admin@' . Str::slug($company->nombre) . '.com',
+                'password' => Hash::make($password),
+                'categoria' => 'Administrador',
+                'idrol' => 2,
+                'id_company' => $company->id,
+                'estado' => 'ACTIVO',
+                'email_verified_at' => now()
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Empresa registrada exitosamente. Su estado es "pendiente" y será revisada por un administrador.',
+                'data' => [
+                    'company' => new CompanyResource($company),
+                    'admin_user' => [
+                        'id' => $adminUser->id,
+                        'name' => $adminUser->name,
+                        'email' => $adminUser->email,
+                        'password' => $password,
+                        'categoria' => $adminUser->categoria,
+                        'role' => 'Administrador General',
+                        'instructions' => 'Guarde estas credenciales. Podrá acceder cuando la empresa sea aprobada.'
+                    ]
+                ]
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar la empresa',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(string $id): JsonResponse
@@ -182,7 +299,7 @@ class CompanyController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCompanyRequest $request, string $id): JsonResponse
+    public function update(Request $request, string $id): JsonResponse
     {
         try {
             $company = Company::findOrFail($id);

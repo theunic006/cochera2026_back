@@ -38,5 +38,14 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Manejar errores de autenticación para API
+        $exceptions->renderable(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No autenticado. Por favor inicie sesión.',
+                    'error' => 'Unauthenticated'
+                ], 401);
+            }
+        });
     })->create();

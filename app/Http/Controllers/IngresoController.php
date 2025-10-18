@@ -6,12 +6,19 @@ use Illuminate\Http\Request;
 
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\IngresoResource;
+use App\Services\LocalPrinterService;
 
 use Picqer\Barcode\BarcodeGeneratorPNG;
 use Mike42\Escpos\EscposImage;
 
 
 class IngresoController extends Controller{
+
+    protected $printerService;
+        public function __construct(LocalPrinterService $printerService)
+    {
+        $this->printerService = $printerService;
+    }
     /**
      * Imprimir ticket de ingreso en impresora térmica
      */
@@ -363,6 +370,45 @@ class IngresoController extends Controller{
                 'message' => 'No se pudo conectar o imprimir en la impresora: ' . $printerName,
                 'error' => $e->getMessage()
             ], 400);
+        }
+    }
+
+       public function printIngresoCompleto($id)
+    {
+        try {
+            $ingreso = Ingreso::with(['vehiculo', 'propietario', 'tipo_vehiculo'])
+                ->findOrFail($id);
+
+            // Preparar datos para el servidor local
+            $datosImpresion = [
+                'id' => $ingreso->id,
+                'numero' => $ingreso->numero ?? 'ING-' . str_pad($id, 6, '0', STR_PAD_LEFT),
+                'fecha' => $ingreso->created_at->format('Y-m-d H:i:s'),
+                'placa' => $ingreso->vehiculo->placa ?? 'N/A',
+                'cliente' => $ingreso->propietario->nombre ?? 'N/A',
+                'vehiculo' => $ingreso->tipo_vehiculo->nombre ?? 'N/A',
+                'marca' => $ingreso->vehiculo->marca ?? '',
+                'modelo' => $ingreso->vehiculo->modelo ?? '',
+                'color' => $ingreso->vehiculo->color ?? '',
+                'monto' => $ingreso->monto ?? 0,
+                'observaciones' => $ingreso->observaciones ?? ''
+            ];
+
+            // Enviar datos completos al servidor local
+            $resultado = $this->printerService->imprimirDirecto($datosImpresion);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ticket impreso correctamente',
+                'printer_status' => $resultado
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al imprimir',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

@@ -17,6 +17,7 @@ use App\Http\Controllers\IngresoController;
 use App\Http\Controllers\SalidaController;
 use App\Http\Controllers\ObservacionController;
 use App\Http\Controllers\PrinterController;
+use App\Http\Controllers\ImpresionController;
 
 // ================================
 // RUTAS PÚBLICAS (No requieren autenticación)
@@ -242,6 +243,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{observacion}', [ObservacionController::class, 'show']);     // GET /api/observaciones/{id} - Mostrar observación
         Route::put('/{observacion}', [ObservacionController::class, 'update']);   // PUT /api/observaciones/{id} - Actualizar observación
         Route::delete('/{observacion}', [ObservacionController::class, 'destroy']); // DELETE /api/observaciones/{id} - Eliminar observación
+        Route::get('/impresion/{id}', [ImpresionController::class, 'imprimir']);
     });
 
     // ================================

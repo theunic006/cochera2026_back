@@ -5,12 +5,10 @@ use App\Models\Ingreso;
 use Illuminate\Http\Request;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use App\Http\Resources\IngresoResource;
-
-use Picqer\Barcode\BarcodeGeneratorPNG;
-use Mike42\Escpos\EscposImage;
-
-
+// ...existing code...
+// ...existing code...
 class IngresoController extends Controller{
     /**
      * Imprimir ticket de ingreso en impresora térmica
@@ -307,63 +305,26 @@ class IngresoController extends Controller{
                 'message' => 'Ingreso no encontrado'
             ], 404);
         }
-        // Obtener la empresa asociada al usuario autenticado
-        $user = \Illuminate\Support\Facades\Auth::user();
-        if (!$user || !$user->company) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No se encontró la empresa asociada al usuario.'
-            ], 400);
-        }
-        $printerName = $user->company->imp_input ?? null;
-        if (empty($printerName)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No existe Impresora, Configuralo en el Perfil de usuario.'
-            ], 400);
-        }
-        try {
-            $connector = new \Mike42\Escpos\PrintConnectors\WindowsPrintConnector($printerName);
-            $printer = new \Mike42\Escpos\Printer($connector);
+        // Preparar datos del ticket para la respuesta
+        $vehiculo = $ingreso->vehiculo;
+        $ticketData = [
+            'placa' => $vehiculo->placa ?? null,
+            'fecha_ingreso' => $ingreso->fecha_ingreso ?? null,
+            'hora_ingreso' => $ingreso->hora_ingreso ?? null,
+            'tipo_vehiculo' => $vehiculo && $vehiculo->tipoVehiculo ? $vehiculo->tipoVehiculo->nombre : null,
+            'valor_hora_fraccion' => $vehiculo && $vehiculo->tipoVehiculo ? (is_numeric($vehiculo->tipoVehiculo->valor) ? number_format($vehiculo->tipoVehiculo->valor, 2) : $vehiculo->tipoVehiculo->valor) : null,
+        ];
 
-            $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_CENTER);
-            $printer->text("COCHERA 2026\n");
-            $printer->text("-----------------------------\n");
-            $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_LEFT);
-            $printer->text("Placa: " . ($ingreso->vehiculo->placa ?? '-') . "\n");
-            $printer->text("Fecha Ingreso: " . ($ingreso->fecha_ingreso ?? '-') . "\n");
-            $printer->text("Hora Ingreso: " . ($ingreso->hora_ingreso ?? '-') . "\n");
-            $printer->text("Tipo Vehiculo: " . ($ingreso->vehiculo->tipoVehiculo->nombre ?? '-') . "\n");
-            $valor = $ingreso->vehiculo->tipoVehiculo->valor ?? '-';
-            $printer->text("Valor hora Fraccion: S/. " . (is_numeric($valor) ? number_format($valor, 2) : $valor) . "\n");
-            $printer->text("-----------------------------\n");
-            // Imprimir código de barras de la placa usando el método nativo
-            $placa = $ingreso->vehiculo->placa ?? null;
-            if ($placa) {
-                $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_CENTER);
-                $printer->text("\n");
-                $printer->setBarcodeHeight(60); // altura aprox. 1cm
-                $printer->setBarcodeWidth(3);   // ancho estándar
-                $printer->barcode($placa, \Mike42\Escpos\Printer::BARCODE_CODE39);
-                $printer->feed();
-            } else {
-                $printer->text("[No se pudo imprimir el código de barras]\n");
-            }
-            $printer->text("¡Gracias por su visita!\n");
-            $printer->feed(2);
-            $printer->cut();
-            $printer->close();
-            return response()->json([
-                'success' => true,
-                'message' => 'Ticket impreso correctamente'
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No se pudo conectar o imprimir en la impresora: ' . $printerName,
-                'error' => $e->getMessage()
-            ], 400);
-        }
+        // Obtener el token del request si existe
+        $token = request()->bearerToken();
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket generado correctamente',
+            'data' => $ticketData,
+            'token' => $token,
+        ], 200);
     }
 
 }

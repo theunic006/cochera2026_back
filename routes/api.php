@@ -18,6 +18,7 @@ use App\Http\Controllers\SalidaController;
 use App\Http\Controllers\ObservacionController;
 use App\Http\Controllers\PrinterController;
 use App\Http\Controllers\ImpresionController;
+use App\Http\Controllers\PermissionController;
 
 // ================================
 // RUTAS PÚBLICAS (No requieren autenticación)
@@ -253,6 +254,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [PrinterController::class, 'index']);                    // GET /api/printers - Listar impresoras
         Route::get('/{printerName}', [PrinterController::class, 'show']);        // GET /api/printers/{nombre} - Mostrar impresora específica
         Route::post('/{printerName}/test', [PrinterController::class, 'test']);  // POST /api/printers/{nombre}/test - Probar impresora
+    });
+
+    // ================================
+    // GESTIÓN DE PERMISOS (Solo usuarios autenticados)
+    // ================================
+    Route::prefix('permissions')->group(function () {
+        // Listar permisos y módulos
+        Route::get('/', [PermissionController::class, 'index']);                         // GET /api/permissions - Listar todos los permisos
+        Route::get('/modules', [PermissionController::class, 'getModules']);             // GET /api/permissions/modules - Listar módulos disponibles
+
+        // Gestión de permisos por usuario
+        Route::get('/users/{userId}', [PermissionController::class, 'getUserPermissions']);          // GET /api/permissions/users/{userId} - Obtener permisos de un usuario
+        Route::post('/users/{userId}/assign', [PermissionController::class, 'assignPermissions']);   // POST /api/permissions/users/{userId}/assign - Asignar permisos a usuario
+        Route::post('/users/{userId}/give', [PermissionController::class, 'givePermission']);        // POST /api/permissions/users/{userId}/give - Dar un permiso a usuario
+        Route::post('/users/{userId}/revoke', [PermissionController::class, 'revokePermission']);    // POST /api/permissions/users/{userId}/revoke - Revocar permiso de usuario
+        Route::get('/users/{userId}/check/{permissionSlug}', [PermissionController::class, 'checkPermission']); // GET /api/permissions/users/{userId}/check/{slug} - Verificar si tiene permiso
     });
 });
 // ================================

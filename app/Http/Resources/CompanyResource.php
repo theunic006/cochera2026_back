@@ -24,6 +24,9 @@ class CompanyResource extends JsonResource
             'estado' => $this->estado,
             'imp_input' => $this->imp_input,
             'imp_output' => $this->imp_output,
+            'ngrok' => $this->ngrok,
+            'ruc' => $this->ruc,
+            'token' => $this->token,
             'estado_info' => [
                 'label' => ucfirst($this->estado),
                 'is_active' => $this->isActive(),

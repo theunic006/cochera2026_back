@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -10,11 +11,17 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function () {
+            Route::prefix('apifactura')
+                ->middleware('api')
+                ->group(base_path('routes/apifactura.php'));
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Excluir rutas API de verificación CSRF
         $middleware->validateCsrfTokens(except: [
             'api/*',
+            'apifactura/*',
         ]);
 
         // Middleware global para API - solo para sesiones stateful
@@ -35,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Alias para middleware
         $middleware->alias([
             'cors' => \Illuminate\Http\Middleware\HandleCors::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

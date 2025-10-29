@@ -299,7 +299,8 @@ class CompanyController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id): JsonResponse
+    //public function update(Request $request, string $id): JsonResponse
+    public function update(UpdateCompanyRequest $request, string $id): JsonResponse
     {
         try {
             $company = Company::findOrFail($id);

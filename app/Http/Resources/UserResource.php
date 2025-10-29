@@ -33,6 +33,9 @@ class UserResource extends JsonResource
                     'capacidad' => $this->company->capacidad,
                     'imp_input' => $this->company->imp_input,
                     'imp_output' => $this->company->imp_output,
+                    'ngrok' => $this->company->ngrok,
+                    'ruc' => $this->company->ruc,
+                    'token' => $this->company->token,
 
                 ];
             }),

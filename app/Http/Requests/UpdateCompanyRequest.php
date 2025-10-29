@@ -29,6 +29,9 @@ class UpdateCompanyRequest extends FormRequest
             'capacidad' => ['nullable', 'integer', 'min:0'],
             'descripcion' => ['nullable', 'string'],
             'estado' => ['nullable', 'in:' . implode(',', Company::getEstadosDisponibles())],
+            'ngrok' => ['nullable', 'string', 'max:255'],
+            'ruc' => ['nullable', 'string', 'max:20'],
+            'token' => ['nullable', 'string', 'max:255'],
             'imp_input' => ['nullable', 'string', 'max:255'],
             'imp_output' => ['nullable', 'string', 'max:255'],
         ];

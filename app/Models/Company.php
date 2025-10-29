@@ -34,6 +34,9 @@ class Company extends Model
         'estado',
         'imp_input',
         'imp_output',
+        'ngrok',
+        'ruc',
+        'token'
     ];
 
     /**

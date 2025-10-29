@@ -1,17 +1,34 @@
 # CONFIGURACIÓN DE CORS Y SANCTUM - COCHERA 2026
 
-## 🔧 Configuración implementada
+## � ÚLTIMA ACTUALIZACIÓN: Soporte para API Facturación
+
+### ⚠️ Error CORS Solucionado
+```
+Access to XMLHttpRequest at 'http://127.0.0.1:8000/apifactura/empresas/1' 
+from origin 'http://localhost:5173' has been blocked by CORS policy
+```
+
+**Solución:** Se agregó `'apifactura/*'` a los paths permitidos en CORS.
+
+---
+
+## �🔧 Configuración implementada
 
 ### 1. CORS (Cross-Origin Resource Sharing)
 Se ha configurado para permitir peticiones desde diferentes dominios y puertos.
 
 **Archivo:** `config/cors.php`
-- ✅ Paths: `api/*` y `sanctum/csrf-cookie`
+- ✅ Paths: `api/*`, **`apifactura/*`**, y `sanctum/csrf-cookie`
 - ✅ Métodos permitidos: `*` (GET, POST, PUT, DELETE, etc.)
 - ✅ Orígenes permitidos: Configurables via `.env`
 - ✅ Headers permitidos: `*`
 - ✅ Soporte para credenciales: `true`
 - ✅ Headers expuestos para cliente
+
+**Configuración actual:**
+```php
+'paths' => ['api/*', 'apifactura/*', 'sanctum/csrf-cookie'],
+```
 
 ### 2. Laravel Sanctum
 Configurado para autenticación de API con tokens.
